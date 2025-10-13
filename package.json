@@ -1,0 +1,77 @@
+{
+  "name": "@tobias-music/chord-components",
+  "version": "0.1.0",
+  "description": "Lit-based web components for displaying musical chord diagrams and chord lists",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./chord-diagram": {
+      "import": "./dist/chord-diagram.js",
+      "types": "./dist/chord-diagram.d.ts"
+    },
+    "./chord-list": {
+      "import": "./dist/chord-list.js",
+      "types": "./dist/chord-list.d.ts"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "src/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite serve demo --host",
+    "preview": "vite preview",
+    "test": "echo 'No tests yet' && exit 0",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "lit",
+    "web-components",
+    "music",
+    "chord",
+    "diagram",
+    "ukulele",
+    "guitar",
+    "mandolin",
+    "chord-chart"
+  ],
+  "author": "Tobias Padilla",
+  "license": "MIT",
+  "homepage": "https://github.com/your-username/chord-components#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/chord-components.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/chord-components/issues"
+  },
+  "dependencies": {
+    "lit": "^3.3.1",
+    "svguitar": "^2.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "peerDependencies": {
+    "lit": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

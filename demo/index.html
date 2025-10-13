@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chord Components Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #1a202c;
+            color: #f8f8f8;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #63b3ed;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            color: #90cdf4;
+            border-bottom: 2px solid #4a5568;
+            padding-bottom: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        .demo-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #2d3748;
+            border-radius: 8px;
+            border: 1px solid #4a5568;
+        }
+
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        select, button {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: 1px solid #4a5568;
+            background: #1a202c;
+            color: #f8f8f8;
+            font-size: 0.9rem;
+        }
+
+        button {
+            background: #3182ce;
+            border-color: #3182ce;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2c5282;
+        }
+
+        .example-container {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #1a202c;
+            border-radius: 4px;
+            border: 1px solid #4a5568;
+        }
+
+        .inline-chords {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        pre {
+            background: #0d1117;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #4a5568;
+        }
+
+        code {
+            color: #f97316;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎸 Chord Components Demo</h1>
+        
+        <h2>Individual Chord Diagrams</h2>
+        <div class="demo-section">
+            <p>Display individual chord diagrams for different instruments:</p>
+            
+            <div class="controls">
+                <label>Instrument:</label>
+                <select id="instrument-select">
+                    <option value="Standard Ukulele">Standard Ukulele</option>
+                    <option value="Standard Guitar">Standard Guitar</option>
+                    <option value="Baritone Ukulele">Baritone Ukulele</option>
+                    <option value="Standard Mandolin">Standard Mandolin</option>
+                </select>
+                
+                <label>Chord:</label>
+                <select id="chord-select">
+                    <option value="C">C</option>
+                    <option value="Cm">Cm</option>
+                    <option value="C7">C7</option>
+                    <option value="Cmaj7">Cmaj7</option>
+                    <option value="D">D</option>
+                    <option value="Dm">Dm</option>
+                    <option value="E">E</option>
+                    <option value="Em">Em</option>
+                    <option value="F">F</option>
+                    <option value="G">G</option>
+                    <option value="G7">G7</option>
+                    <option value="Am">Am</option>
+                    <option value="A">A</option>
+                </select>
+            </div>
+
+            <div class="example-container">
+                <chord-diagram id="single-chord" chord="C" instrument="Standard Ukulele"></chord-diagram>
+            </div>
+
+            <pre><code>&lt;chord-diagram chord="C" instrument="Standard Ukulele"&gt;&lt;/chord-diagram&gt;</code></pre>
+        </div>
+
+        <h2>Chord Lists</h2>
+        <div class="demo-section">
+            <p>Display multiple chords in a responsive grid layout:</p>
+            
+            <div class="controls">
+                <label>Instrument:</label>
+                <select id="list-instrument-select">
+                    <option value="Standard Ukulele">Standard Ukulele</option>
+                    <option value="Standard Guitar">Standard Guitar</option>
+                </select>
+                
+                <button id="common-chords-btn">Common Chords</button>
+                <button id="jazz-chords-btn">Jazz Chords</button>
+                <button id="custom-chords-btn">Custom Set</button>
+            </div>
+
+            <div class="example-container">
+                <chord-list id="chord-list-demo" 
+                           instrument="Standard Ukulele" 
+                           chords='["C", "F", "G", "Am"]'>
+                </chord-list>
+            </div>
+
+            <pre><code>&lt;chord-list instrument="Standard Ukulele" chords='["C", "F", "G", "Am"]'&gt;&lt;/chord-list&gt;</code></pre>
+        </div>
+
+        <h2>Quick Examples</h2>
+        <div class="demo-section">
+            <h3>Ukulele Common Chords</h3>
+            <div class="inline-chords">
+                <chord-diagram chord="C" instrument="Standard Ukulele"></chord-diagram>
+                <chord-diagram chord="F" instrument="Standard Ukulele"></chord-diagram>
+                <chord-diagram chord="G" instrument="Standard Ukulele"></chord-diagram>
+                <chord-diagram chord="Am" instrument="Standard Ukulele"></chord-diagram>
+            </div>
+
+            <h3>Guitar Power Chords</h3>
+            <div class="inline-chords">
+                <chord-diagram chord="E" instrument="Standard Guitar"></chord-diagram>
+                <chord-diagram chord="A" instrument="Standard Guitar"></chord-diagram>
+                <chord-diagram chord="D" instrument="Standard Guitar"></chord-diagram>
+                <chord-diagram chord="G" instrument="Standard Guitar"></chord-diagram>
+            </div>
+        </div>
+
+        <h2>API Documentation</h2>
+        <div class="demo-section">
+            <h3>chord-diagram</h3>
+            <p>Displays a single chord diagram.</p>
+            <ul>
+                <li><strong>chord</strong> (string): The chord name (e.g., "C", "Am7", "F#dim")</li>
+                <li><strong>instrument</strong> (string): The instrument type (default: "Standard Ukulele")</li>
+            </ul>
+
+            <h3>chord-list</h3>
+            <p>Displays multiple chord diagrams in a responsive grid.</p>
+            <ul>
+                <li><strong>instrument</strong> (string): The instrument type (default: "Standard Ukulele")</li>
+                <li><strong>chords</strong> (string|array): JSON string or array of chord names</li>
+            </ul>
+
+            <h3>Supported Instruments</h3>
+            <ul>
+                <li>Standard Ukulele</li>
+                <li>Baritone Ukulele</li>
+                <li>5ths tuned Ukulele</li>
+                <li>Standard Guitar</li>
+                <li>Drop-D Guitar</li>
+                <li>Standard Mandolin</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import '../dist/chord-diagram.js';
+        import '../dist/chord-list.js';
+
+        // Single chord demo controls
+        const instrumentSelect = document.getElementById('instrument-select');
+        const chordSelect = document.getElementById('chord-select');
+        const singleChord = document.getElementById('single-chord');
+
+        function updateSingleChord() {
+            singleChord.setAttribute('instrument', instrumentSelect.value);
+            singleChord.setAttribute('chord', chordSelect.value);
+        }
+
+        instrumentSelect.addEventListener('change', updateSingleChord);
+        chordSelect.addEventListener('change', updateSingleChord);
+
+        // Chord list demo controls
+        const listInstrumentSelect = document.getElementById('list-instrument-select');
+        const chordListDemo = document.getElementById('chord-list-demo');
+        const commonChordsBtn = document.getElementById('common-chords-btn');
+        const jazzChordsBtn = document.getElementById('jazz-chords-btn');
+        const customChordsBtn = document.getElementById('custom-chords-btn');
+
+        listInstrumentSelect.addEventListener('change', () => {
+            chordListDemo.setAttribute('instrument', listInstrumentSelect.value);
+        });
+
+        commonChordsBtn.addEventListener('click', () => {
+            const instrument = listInstrumentSelect.value;
+            const chords = instrument === 'Standard Guitar' 
+                ? ["C", "D", "E", "F", "G", "A", "Em", "Am", "Dm"]
+                : ["C", "F", "G", "Am", "D", "Em", "A7", "D7", "G7"];
+            chordListDemo.setAttribute('chords', JSON.stringify(chords));
+        });
+
+        jazzChordsBtn.addEventListener('click', () => {
+            const chords = ["Cmaj7", "Dm7", "Em7", "Fmaj7", "G7", "Am7", "Bm7b5"];
+            chordListDemo.setAttribute('chords', JSON.stringify(chords));
+        });
+
+        customChordsBtn.addEventListener('click', () => {
+            const chords = ["C", "C7", "Cm", "Cmaj7", "Cdim"];
+            chordListDemo.setAttribute('chords', JSON.stringify(chords));
+        });
+    </script>
+</body>
+</html>
