@@ -28,6 +28,8 @@
   ],
   "scripts": {
     "build": "tsc && vite build",
+    "build:demo": "vite build --config vite.demo.config.ts",
+    "build:all": "npm run build && npm run build:demo",
     "dev": "vite serve demo --host",
     "preview": "vite preview",
     "test": "echo 'No tests yet' && exit 0",
