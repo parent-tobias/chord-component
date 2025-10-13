@@ -1,9 +1,10 @@
 import { LitElement, css, html } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { SVGuitarChord } from 'svguitar';
 
 import { instruments, chordOnInstrument, chordToNotes } from './music-utils.js';
-import { systemDefaultChords } from './default-chords.js';
+import { chordDataService } from './chord-data-service.js';
+import type { InstrumentDefault } from './default-chords.js';
 
 /**
  * A web component that displays a chord diagram for various instruments.
@@ -88,7 +89,64 @@ export class ChordDiagram extends LitElement {
 	@query('.diagram')
 	container?: HTMLElement;
 
+	@state()
+	private chordData: Record<string, InstrumentDefault> = {};
+
+	@state()
+	private isLoading = false;
+
+	@state()
+	private loadError: string | null = null;
+
+	async connectedCallback() {
+		super.connectedCallback();
+		await this.loadChordData();
+	}
+
+	async updated(changedProperties: Map<string, any>) {
+		super.updated(changedProperties);
+
+		// Reload chord data if instrument changes
+		if (changedProperties.has('instrument')) {
+			await this.loadChordData();
+		}
+	}
+
+	private async loadChordData() {
+		this.isLoading = true;
+		this.loadError = null;
+
+		try {
+			const result = await chordDataService.getChordData(this.instrument);
+			this.chordData = result.data;
+		} catch (error) {
+			console.error('Failed to load chord data:', error);
+			this.loadError = 'Failed to load chord data';
+			this.chordData = {};
+		} finally {
+			this.isLoading = false;
+		}
+	}
+
 	render() {
+		if (this.isLoading) {
+			return html`
+				<div class='chord'>
+					<div style="color: #90cdf4; font-size: 0.8rem; text-align: center; padding: 0.5rem;">
+						Loading...
+					</div>
+				</div>
+			`;
+		}
+
+		if (this.loadError) {
+			return html`
+				<div class='chord'>
+					<div class='error'>${this.loadError}</div>
+				</div>
+			`;
+		}
+
 		if (!this.chord) {
 			return html`
 				<div class='chord'>
@@ -122,21 +180,43 @@ export class ChordDiagram extends LitElement {
 			`;
 		}
 
-		// Check if we have a system default for this chord/instrument combination
-		const chartSettings = systemDefaultChords[this.instrument] && systemDefaultChords[this.instrument][this.chord] ?
-			systemDefaultChords[this.instrument][this.chord] : 
+		// Check if we have a default for this chord/instrument combination
+		const chartSettings = this.chordData[this.chord] ?
+			this.chordData[this.chord] :
 			{
 				barres: [],
 				fingers: chordFinder(chordObject) || []
 			};
 
-		// Calculate the number of frets needed
-		const arrayOfFrets: number[] = chartSettings.fingers.map(([, fret]): number => 
+		// Auto-calculate position based on chord data (not stored with chord)
+		const arrayOfFrets: number[] = chartSettings.fingers.map(([, fret]): number =>
 			typeof fret === 'number' ? fret : Infinity
 		);
+		const barreFrets = chartSettings.barres.map((b: any) => typeof b.fret === 'number' ? b.fret : 0);
+		const allChordFrets = [...arrayOfFrets, ...barreFrets];
 
-		let maxFrets = Math.max(...arrayOfFrets);
-		maxFrets = maxFrets >= 4 ? maxFrets : 4;
+		const minChordFret = allChordFrets.length > 0 ? Math.min(...allChordFrets.filter(f => f > 0)) : 1;
+		const maxChordFret = allChordFrets.length > 0 ? Math.max(...allChordFrets, 0) : 4;
+
+		let position = 1;
+		if (maxChordFret > 4) {
+			// For high chords, start from the lowest fret
+			position = Math.max(1, minChordFret);
+		}
+
+		// Determine fret range to display
+		let fretCount: number;
+		let displayPosition: number;
+
+		if (position > 1 || maxChordFret > 4) {
+			// High position chord - show from position
+			fretCount = Math.max(maxChordFret - position + 1, 4);
+			displayPosition = position;
+		} else {
+			// Low position chord - show from fret 1
+			fretCount = Math.max(maxChordFret, 4);
+			displayPosition = 1;
+		}
 
 		// Create a container div for SVGuitar
 		const divEl = document.createElement("div");
@@ -146,11 +226,14 @@ export class ChordDiagram extends LitElement {
 			chart
 				.configure({
 					strings: instrumentObject.strings.length,
-					frets: maxFrets,
-					position: 1,
+					frets: fretCount,
+					position: displayPosition,
 					tuning: [...instrumentObject.strings]
 				})
-				.chord(chartSettings)
+				.chord({
+					fingers: chartSettings.fingers,
+					barres: chartSettings.barres
+				})
 				.draw();
 
 			return html`

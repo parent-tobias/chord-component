@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chord Editor Demo - Chord Components</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #1a202c;
+            color: #f8f8f8;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #63b3ed;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #a0aec0;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        h2 {
+            color: #90cdf4;
+            border-bottom: 2px solid #4a5568;
+            padding-bottom: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        .demo-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #2d3748;
+            border-radius: 8px;
+            border: 1px solid #4a5568;
+        }
+
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        select, button, input {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: 1px solid #4a5568;
+            background: #1a202c;
+            color: #f8f8f8;
+            font-size: 0.9rem;
+        }
+
+        button {
+            background: #3182ce;
+            border-color: #3182ce;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2c5282;
+        }
+
+        button.secondary {
+            background: #718096;
+            border-color: #718096;
+        }
+
+        button.secondary:hover {
+            background: #4a5568;
+        }
+
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 900px) {
+            .editor-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .comparison {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .comparison-label {
+            color: #90cdf4;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-chords-list {
+            background: #1a202c;
+            border-radius: 4px;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .user-chord-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #2d3748;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            border: 1px solid #4a5568;
+        }
+
+        .user-chord-item:hover {
+            border-color: #63b3ed;
+        }
+
+        .user-chord-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .user-chord-name {
+            font-weight: 600;
+            color: #90cdf4;
+        }
+
+        .user-chord-instrument {
+            font-size: 0.85rem;
+            color: #a0aec0;
+        }
+
+        .empty-state {
+            color: #a0aec0;
+            font-style: italic;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            background: #2d3748;
+            border-left: 4px solid #63b3ed;
+        }
+
+        .alert.success {
+            border-color: #48bb78;
+            background: rgba(72, 187, 120, 0.1);
+        }
+
+        .alert.info {
+            border-color: #4299e1;
+            background: rgba(66, 153, 225, 0.1);
+        }
+
+        pre {
+            background: #0d1117;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #4a5568;
+        }
+
+        code {
+            color: #f97316;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✏️ Chord Editor Demo</h1>
+        <p class="subtitle">Create and save custom chord fingerings for any instrument</p>
+
+        <div class="alert info">
+            <strong>How to use:</strong> Select an instrument and chord below. You can:
+            <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+                <li>Click on the diagram to add/edit finger positions</li>
+                <li>Edit finger positions directly in the text fields</li>
+                <li>Use "+ Add Finger Position" to add new fingers</li>
+                <li>Use "+ Add Barre" to create barre chords</li>
+                <li>Adjust the starting fret position for higher neck positions</li>
+            </ul>
+            Your custom chords are saved to your browser's IndexedDB and will persist across sessions.
+        </div>
+
+        <h2>Editor</h2>
+        <div class="demo-section">
+            <div class="controls">
+                <label>Instrument:</label>
+                <select id="instrument-select">
+                    <option value="Standard Ukulele">Standard Ukulele</option>
+                    <option value="Standard Guitar">Standard Guitar</option>
+                    <option value="Baritone Ukulele">Baritone Ukulele</option>
+                    <option value="Standard Mandolin">Standard Mandolin</option>
+                </select>
+
+                <label>Chord:</label>
+                <input type="text" id="chord-input" placeholder="e.g., C, Am7, F#dim" value="C" />
+
+                <button id="load-btn">Load Chord</button>
+            </div>
+
+            <div class="editor-container">
+                <div>
+                    <div class="comparison-label">Editor</div>
+                    <chord-editor id="chord-editor" chord="C" instrument="Standard Ukulele"></chord-editor>
+                </div>
+                <div class="comparison">
+                    <div class="comparison-label">Preview (Read-only)</div>
+                    <chord-diagram id="preview-diagram" chord="C" instrument="Standard Ukulele"></chord-diagram>
+                </div>
+            </div>
+        </div>
+
+        <h2>Your Custom Chords</h2>
+        <div class="demo-section">
+            <div class="controls">
+                <button id="refresh-list-btn">Refresh List</button>
+                <button id="clear-all-btn" class="secondary">Clear All Custom Chords</button>
+            </div>
+
+            <div id="user-chords-container" class="user-chords-list">
+                <div class="empty-state">No custom chords saved yet. Create one using the editor above!</div>
+            </div>
+        </div>
+
+        <h2>Usage Example</h2>
+        <div class="demo-section">
+            <pre><code>&lt;!-- Add the chord editor to your page --&gt;
+&lt;chord-editor chord="C" instrument="Standard Ukulele"&gt;&lt;/chord-editor&gt;
+
+&lt;!-- Listen for save events --&gt;
+&lt;script type="module"&gt;
+  const editor = document.querySelector('chord-editor');
+
+  editor.addEventListener('chord-saved', (e) => {
+    console.log('Chord saved:', e.detail);
+    // { instrument, chord, data }
+  });
+
+  editor.addEventListener('chord-reset', (e) => {
+    console.log('Chord reset to default:', e.detail);
+    // { instrument, chord }
+  });
+&lt;/script&gt;</code></pre>
+        </div>
+
+        <h2>Programmatic Access</h2>
+        <div class="demo-section">
+            <p>You can also access the chord data service directly:</p>
+            <pre><code>import { chordDataService } from '@tobias-music/chord-components';
+
+// Get all user-defined chords
+const userChords = await chordDataService.getAllUserChords();
+
+// Get user chords for specific instrument
+const ukeChords = await chordDataService.getUserChordsByInstrument('Standard Ukulele');
+
+// Save a custom chord
+await chordDataService.saveUserChord('Standard Ukulele', 'C', {
+  fingers: [[4,0], [3,0], [2,0], [1,3]],
+  barres: []
+});
+
+// Delete a custom chord (revert to default)
+await chordDataService.deleteUserChord('Standard Ukulele', 'C');
+
+// Clear all custom chords
+await chordDataService.clearUserChords();</code></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        import '../dist/chord-editor.js';
+        import '../dist/chord-diagram.js';
+        import { chordDataService } from '../dist/chord-data-service.js';
+
+        const instrumentSelect = document.getElementById('instrument-select');
+        const chordInput = document.getElementById('chord-input');
+        const loadBtn = document.getElementById('load-btn');
+        const chordEditor = document.getElementById('chord-editor');
+        const previewDiagram = document.getElementById('preview-diagram');
+        const refreshListBtn = document.getElementById('refresh-list-btn');
+        const clearAllBtn = document.getElementById('clear-all-btn');
+        const userChordsContainer = document.getElementById('user-chords-container');
+
+        // Load chord in editor
+        function loadChord() {
+            const instrument = instrumentSelect.value;
+            const chord = chordInput.value.trim();
+
+            if (!chord) {
+                alert('Please enter a chord name');
+                return;
+            }
+
+            chordEditor.setAttribute('instrument', instrument);
+            chordEditor.setAttribute('chord', chord);
+            previewDiagram.setAttribute('instrument', instrument);
+            previewDiagram.setAttribute('chord', chord);
+        }
+
+        loadBtn.addEventListener('click', loadChord);
+        chordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loadChord();
+            }
+        });
+
+        // Listen for chord saved event
+        chordEditor.addEventListener('chord-saved', async (e) => {
+            console.log('Chord saved:', e.detail);
+
+            // Show success message
+            const alert = document.createElement('div');
+            alert.className = 'alert success';
+            alert.innerHTML = `<strong>Saved!</strong> ${e.detail.chord} on ${e.detail.instrument} has been saved.`;
+            document.querySelector('.container').insertBefore(alert, document.querySelector('h2'));
+
+            setTimeout(() => alert.remove(), 3000);
+
+            // Refresh the list
+            await loadUserChords();
+
+            // Update preview
+            previewDiagram.requestUpdate();
+        });
+
+        // Listen for chord reset event
+        chordEditor.addEventListener('chord-reset', async (e) => {
+            console.log('Chord reset:', e.detail);
+            await loadUserChords();
+            previewDiagram.requestUpdate();
+        });
+
+        // Load and display user chords
+        async function loadUserChords() {
+            try {
+                const userChords = await chordDataService.getAllUserChords();
+
+                if (userChords.length === 0) {
+                    userChordsContainer.innerHTML = '<div class="empty-state">No custom chords saved yet. Create one using the editor above!</div>';
+                    return;
+                }
+
+                userChordsContainer.innerHTML = userChords.map(({ instrument, chordName, data }) => `
+                    <div class="user-chord-item">
+                        <div class="user-chord-info">
+                            <span class="user-chord-name">${chordName}</span>
+                            <span class="user-chord-instrument">${instrument}</span>
+                        </div>
+                        <div>
+                            <button class="load-user-chord" data-instrument="${instrument}" data-chord="${chordName}">
+                                Load
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Add event listeners to load buttons
+                document.querySelectorAll('.load-user-chord').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const instrument = btn.dataset.instrument;
+                        const chord = btn.dataset.chord;
+                        instrumentSelect.value = instrument;
+                        chordInput.value = chord;
+                        loadChord();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                });
+            } catch (error) {
+                console.error('Failed to load user chords:', error);
+                userChordsContainer.innerHTML = '<div class="empty-state">Error loading custom chords</div>';
+            }
+        }
+
+        // Refresh list button
+        refreshListBtn.addEventListener('click', loadUserChords);
+
+        // Clear all button
+        clearAllBtn.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to delete ALL custom chords? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                await chordDataService.clearUserChords();
+                await loadUserChords();
+                alert('All custom chords have been cleared.');
+            } catch (error) {
+                console.error('Failed to clear chords:', error);
+                alert('Error clearing custom chords. Please try again.');
+            }
+        });
+
+        // Initial load
+        loadUserChords();
+    </script>
+</body>
+</html>

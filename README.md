@@ -6,6 +6,9 @@ Lit-based web components for displaying musical chord diagrams and chord lists a
 
 - 🎸 Support for multiple instruments (Ukulele, Guitar, Mandolin)
 - 🎵 Comprehensive chord library with major, minor, 7th, and extended chords
+- ✏️ **Interactive chord editor** for creating custom fingerings
+- 💾 **Persistent storage** with IndexedDB for user-defined chords
+- 🎯 **High-position chord support** with automatic position markers
 - 📱 Responsive design with container queries
 - 🎨 Dark theme optimized
 - ⚡ Built with Lit for fast, efficient rendering
@@ -47,12 +50,19 @@ npm install @tobias-music/chord-components
 ```javascript
 import '@tobias-music/chord-components/chord-diagram';
 import '@tobias-music/chord-components/chord-list';
+import '@tobias-music/chord-components/chord-editor';
 ```
 
-### Import utilities
+### Import utilities and services
 
 ```javascript
-import { instruments, chordToNotes, systemDefaultChords } from '@tobias-music/chord-components';
+import {
+    instruments,
+    chordToNotes,
+    systemDefaultChords,
+    chordDataService,  // Data management service
+    indexedDBService   // IndexedDB wrapper
+} from '@tobias-music/chord-components';
 ```
 
 ## Components
@@ -92,16 +102,77 @@ Displays multiple chord diagrams in a responsive grid layout.
 
 ```html
 <!-- Array of chords -->
-<chord-list 
-    instrument="Standard Ukulele" 
+<chord-list
+    instrument="Standard Ukulele"
     chords='["C", "F", "G", "Am"]'>
 </chord-list>
 
 <!-- More complex chord progression -->
-<chord-list 
-    instrument="Standard Guitar" 
+<chord-list
+    instrument="Standard Guitar"
     chords='["Cmaj7", "Dm7", "G7", "Em7", "Am7"]'>
 </chord-list>
+```
+
+### `<chord-editor>` ✨ NEW
+
+**Interactive editor for creating and customizing chord diagrams.**
+
+Create custom chord fingerings with visual and text-based editing. All custom chords are automatically saved to IndexedDB and persist across sessions.
+
+#### Attributes
+
+- **`chord`** (string, required): The chord name to edit
+- **`instrument`** (string, optional): The instrument type (default: "Standard Ukulele")
+
+#### Events
+
+- **`chord-saved`**: Fired when user saves a custom chord
+- **`chord-reset`**: Fired when user resets to default
+
+#### Examples
+
+```html
+<!-- Basic editor -->
+<chord-editor chord="C" instrument="Standard Ukulele"></chord-editor>
+
+<!-- Listen for save events -->
+<script type="module">
+    const editor = document.querySelector('chord-editor');
+
+    editor.addEventListener('chord-saved', (e) => {
+        console.log('Saved:', e.detail.chord, e.detail.data);
+    });
+</script>
+```
+
+#### Features
+
+- **Visual editing**: Click on diagram to add/remove finger positions
+- **Text-based editing**: Edit finger and barre positions with input fields
+- **Add buttons**: Quickly add new fingers or barres
+- **View position control**: Adjust display window for high-position chords
+- **Auto-save to IndexedDB**: Custom chords persist across sessions
+- **Reset to default**: Revert to system defaults anytime
+
+See [CHORD_EDITOR.md](./CHORD_EDITOR.md) for complete documentation.
+
+#### Creating Custom Chords
+
+```javascript
+import { chordDataService } from '@tobias-music/chord-components';
+
+// Programmatically save a custom chord
+await chordDataService.saveUserChord('Standard Ukulele', 'C', {
+    fingers: [[4, 0], [3, 0], [2, 0], [1, 3]],
+    barres: []
+});
+
+// Get all user-defined chords
+const userChords = await chordDataService.getAllUserChords();
+
+// Delete a custom chord (revert to default)
+await chordDataService.deleteUserChord('Standard Ukulele', 'C');
 ```
 
 ## Supported Instruments
@@ -160,12 +231,41 @@ npm run lint
 
 ### Custom Chord Definitions
 
-You can extend the chord library by importing and modifying the default chords:
+#### Using the Chord Editor (Recommended)
+
+The easiest way to create custom chords is using the interactive `<chord-editor>` component:
+
+```html
+<chord-editor chord="Csus2" instrument="Standard Ukulele"></chord-editor>
+```
+
+Custom chords are automatically saved to IndexedDB and will be used by all `<chord-diagram>` components.
+
+See the [interactive demo](./demo/editor.html) for hands-on examples.
+
+#### Programmatic API
+
+```javascript
+import { chordDataService } from '@tobias-music/chord-components';
+
+// Save a custom chord
+await chordDataService.saveUserChord('Standard Ukulele', 'Csus2', {
+    barres: [],
+    fingers: [[4, 0], [3, 2], [2, 3], [1, 0]]
+});
+
+// Get chord data (user override if exists, otherwise system default)
+const chord = await chordDataService.getChord('Standard Ukulele', 'C');
+```
+
+#### Modifying System Defaults
+
+You can also extend the system defaults (not recommended for user preferences):
 
 ```javascript
 import { systemDefaultChords } from '@tobias-music/chord-components';
 
-// Add custom chord definition
+// Add to system defaults
 systemDefaultChords["Standard Ukulele"]["Csus2"] = {
     barres: [],
     fingers: [[4, 0], [3, 2], [2, 3], [1, 0]]
@@ -191,7 +291,7 @@ chord-diagram {
 The package exports several utility functions for working with music theory:
 
 ```javascript
-import { 
+import {
     instruments,        // Array of supported instruments
     chordToNotes,      // Convert chord name to note array
     parseChords,       // Parse chords from ChordPro notation
@@ -204,6 +304,48 @@ const chordData = chordToNotes("Cmaj7");
 console.log(chordData); // { name: "Cmaj7", notes: ["C", "E", "G", "B"] }
 ```
 
+### Data Management Services
+
+The package includes services for managing chord data:
+
+```javascript
+import { chordDataService, indexedDBService } from '@tobias-music/chord-components';
+
+// Chord Data Service
+await chordDataService.getChordData('Standard Ukulele');
+await chordDataService.saveUserChord(instrument, chord, data);
+await chordDataService.getAllUserChords();
+await chordDataService.clearCache();
+
+// IndexedDB Service (low-level)
+await indexedDBService.saveUserChord(instrument, chord, data);
+await indexedDBService.getUserChord(instrument, chord);
+```
+
+See [DATA_SERVICE.md](./DATA_SERVICE.md) for complete API documentation.
+
+## Documentation
+
+Comprehensive guides for advanced features:
+
+- **[CHORD_EDITOR.md](./CHORD_EDITOR.md)** - Complete chord editor documentation
+- **[INTERACTIVE_EDITING.md](./INTERACTIVE_EDITING.md)** - Visual and text-based editing workflows
+- **[VIEW_POSITION.md](./VIEW_POSITION.md)** - Understanding the display window system
+- **[DATA_SERVICE.md](./DATA_SERVICE.md)** - Data caching and API integration
+- **[POSITION_SUPPORT.md](./POSITION_SUPPORT.md)** - High-position chords and neck positions
+
+## Demo
+
+Run the demo locally:
+
+```bash
+npm run dev
+```
+
+Then visit:
+- `http://localhost:5173/demo/` - Chord diagram and list examples
+- `http://localhost:5173/demo/editor.html` - Interactive chord editor
+
 ## License
 
 MIT
@@ -214,4 +356,4 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ## Support
 
-For questions and support, please open an issue on the GitHub repository.# chord-component
+For questions and support, please open an issue on the GitHub repository.

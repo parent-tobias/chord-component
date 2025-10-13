@@ -7,6 +7,7 @@ interface Dictionary<T> {
 export type InstrumentDefault = {
   barres: Barre[]
   fingers: Finger[]
+  position?: number  // Starting fret position (1 = first fret, etc.)
 }
 
 type Instrument = Dictionary<InstrumentDefault>
