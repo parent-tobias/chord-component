@@ -1,5 +1,5 @@
 {
-  "name": "chord-components",
+  "name": "chord-component",
   "version": "0.1.1",
   "description": "Lit-based web components for displaying musical chord diagrams and chord lists",
   "type": "module",
@@ -50,13 +50,13 @@
   ],
   "author": "Tobias Padilla",
   "license": "MIT",
-  "homepage": "https://github.com/parent-tobias/chord-components#readme",
+  "homepage": "https://github.com/parent-tobias/chord-component#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/parent-tobias/chord-components.git"
+    "url": "git+https://github.com/parent-tobias/chord-component.git"
   },
   "bugs": {
-    "url": "https://github.com/parent-tobias/chord-components/issues"
+    "url": "https://github.com/parent-tobias/chord-component/issues"
   },
   "dependencies": {
     "lit": "^3.3.1",

@@ -1,4 +1,4 @@
-# chord-components
+# chord-component
 
 Lit-based web components for displaying musical chord diagrams and chord lists across various string instruments.
 
@@ -17,7 +17,7 @@ Lit-based web components for displaying musical chord diagrams and chord lists a
 ## Installation
 
 ```bash
-npm install chord-components
+npm install chord-component
 ```
 
 ## Quick Start
@@ -29,7 +29,7 @@ npm install chord-components
 <html>
 <head>
     <script type="module">
-        import 'chord-components';
+        import 'chord-component';
     </script>
 </head>
 <body>
@@ -48,9 +48,9 @@ npm install chord-components
 ### Import specific components
 
 ```javascript
-import 'chord-components/chord-diagram';
-import 'chord-components/chord-list';
-import 'chord-components/chord-editor';
+import 'chord-component/chord-diagram';
+import 'chord-component/chord-list';
+import 'chord-component/chord-editor';
 ```
 
 ### Import utilities and services
@@ -62,7 +62,7 @@ import {
     systemDefaultChords,
     chordDataService,  // Data management service
     indexedDBService   // IndexedDB wrapper
-} from 'chord-components';
+} from 'chord-component';
 ```
 
 ## Components
@@ -160,7 +160,7 @@ See [CHORD_EDITOR.md](./CHORD_EDITOR.md) for complete documentation.
 #### Creating Custom Chords
 
 ```javascript
-import { chordDataService } from 'chord-components';
+import { chordDataService } from 'chord-component';
 
 // Programmatically save a custom chord
 await chordDataService.saveUserChord('Standard Ukulele', 'C', {
@@ -246,7 +246,7 @@ See the [interactive demo](./demo/editor.html) for hands-on examples.
 #### Programmatic API
 
 ```javascript
-import { chordDataService } from 'chord-components';
+import { chordDataService } from 'chord-component';
 
 // Save a custom chord
 await chordDataService.saveUserChord('Standard Ukulele', 'Csus2', {
@@ -263,7 +263,7 @@ const chord = await chordDataService.getChord('Standard Ukulele', 'C');
 You can also extend the system defaults (not recommended for user preferences):
 
 ```javascript
-import { systemDefaultChords } from 'chord-components';
+import { systemDefaultChords } from 'chord-component';
 
 // Add to system defaults
 systemDefaultChords["Standard Ukulele"]["Csus2"] = {
@@ -297,7 +297,7 @@ import {
     parseChords,       // Parse chords from ChordPro notation
     scaleTones,        // Get notes in a scale
     findBase           // Find note index in chromatic scale
-} from 'chord-components';
+} from 'chord-component';
 
 // Example usage
 const chordData = chordToNotes("Cmaj7");
@@ -309,7 +309,7 @@ console.log(chordData); // { name: "Cmaj7", notes: ["C", "E", "G", "B"] }
 The package includes services for managing chord data:
 
 ```javascript
-import { chordDataService, indexedDBService } from 'chord-components';
+import { chordDataService, indexedDBService } from 'chord-component';
 
 // Chord Data Service
 await chordDataService.getChordData('Standard Ukulele');

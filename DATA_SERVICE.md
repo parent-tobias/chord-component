@@ -30,7 +30,7 @@ By default, the components work exactly as before, but with automatic caching:
 When you're ready to use a remote API endpoint, configure the service:
 
 ```javascript
-import { chordDataService } from 'chord-components';
+import { chordDataService } from 'chord-component';
 
 // Configure the API endpoint
 chordDataService.configureAPI('https://api.example.com/chords');
@@ -88,7 +88,7 @@ GET https://api.example.com/chords?instrument=Standard%20Guitar
 If you need to clear the cached data:
 
 ```javascript
-import { chordDataService } from 'chord-components';
+import { chordDataService } from 'chord-component';
 
 // Clear all cached chord data
 await chordDataService.clearCache();
@@ -99,7 +99,7 @@ await chordDataService.clearCache();
 Force a refresh from the source (API or local):
 
 ```javascript
-import { chordDataService } from 'chord-components';
+import { chordDataService } from 'chord-component';
 
 // Force refresh data for a specific instrument
 const result = await chordDataService.refreshData('Standard Ukulele');
@@ -109,7 +109,7 @@ console.log('Data source:', result.source.type); // 'api', 'local', or 'indexedd
 ### Check Available Instruments
 
 ```javascript
-import { chordDataService } from 'chord-components';
+import { chordDataService } from 'chord-component';
 
 const instruments = chordDataService.getAvailableInstruments();
 console.log(instruments);
@@ -119,7 +119,7 @@ console.log(instruments);
 ### Get Specific Chord Data
 
 ```javascript
-import { chordDataService } from 'chord-components';
+import { chordDataService } from 'chord-component';
 
 // Get data for a specific chord
 const chord = await chordDataService.getChord('Standard Ukulele', 'C');
@@ -136,7 +136,7 @@ console.log(exists); // true or false
 To switch back to local-only mode:
 
 ```javascript
-import { chordDataService } from 'chord-components';
+import { chordDataService } from 'chord-component';
 
 chordDataService.disableAPI();
 ```

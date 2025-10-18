@@ -102,7 +102,7 @@ When displaying a chord, the component automatically:
 ### Method 2: Programmatically
 
 ```javascript
-import { chordDataService } from '@tobias-music/chord-components';
+import { chordDataService } from 'chord-component';
 
 // Save a C chord starting at position 3
 await chordDataService.saveUserChord('Standard Ukulele', 'C', {
