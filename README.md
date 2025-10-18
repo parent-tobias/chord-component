@@ -1,4 +1,4 @@
-# @tobias-music/chord-components
+# chord-components
 
 Lit-based web components for displaying musical chord diagrams and chord lists across various string instruments.
 
@@ -17,7 +17,7 @@ Lit-based web components for displaying musical chord diagrams and chord lists a
 ## Installation
 
 ```bash
-npm install @tobias-music/chord-components
+npm install chord-components
 ```
 
 ## Quick Start
