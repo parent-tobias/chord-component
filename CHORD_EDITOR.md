@@ -75,7 +75,7 @@ editor.addEventListener('chord-reset', (e) => {
 ### Managing User Chords Programmatically
 
 ```javascript
-import { chordDataService } from '@tobias-music/chord-components';
+import { chordDataService } from 'chord-components';
 
 // Get all user-defined chords
 const allUserChords = await chordDataService.getAllUserChords();
@@ -106,7 +106,7 @@ await chordDataService.clearUserChords();
 When retrieving chord data, you can specify whether to prefer user overrides:
 
 ```javascript
-import { chordDataService } from '@tobias-music/chord-components';
+import { chordDataService } from 'chord-components';
 
 // Get chord with user override (if exists)
 const chord = await chordDataService.getChord('Standard Ukulele', 'C', true);

@@ -1,0 +1,35 @@
+# Development files
+.github/
+.vscode/
+demo/
+node_modules/
+*.log
+*.lock
+
+# Build artifacts that shouldn't be published
+dist/node_modules/
+
+# Development configuration
+vite.config.ts
+vite.demo.config.ts
+tsconfig.json
+.eslintrc.*
+.prettierrc.*
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (keep only README and LICENSE)
+*.md
+!README.md
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+__tests__/
+coverage/
+
+# CI/CD
+.github/
