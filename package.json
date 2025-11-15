@@ -1,6 +1,6 @@
 {
   "name": "chord-component",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Lit-based web components for displaying musical chord diagrams and chord lists",
   "type": "module",
   "main": "dist/index.js",
@@ -18,6 +18,10 @@
     "./chord-list": {
       "import": "./dist/chord-list.js",
       "types": "./dist/chord-list.d.ts"
+    },
+    "./chord-editor": {
+      "import": "./dist/chord-editor.js",
+      "types": "./dist/chord-editor.d.ts"
     }
   },
   "files": [

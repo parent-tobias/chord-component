@@ -359,11 +359,14 @@ export class ChordEditor extends LitElement {
 						   ...this.barres.map(b => typeof b.fret === 'number' ? b.fret : 0)];
 		const maxFret = Math.max(...allFrets, 0);
 
-		// Calculate fret range based on display position
-		if (this.viewPosition > 1 || maxFret > 4) {
-			return Math.max(maxFret - this.viewPosition + 1, 4);
-		}
-		return Math.max(maxFret, 4);
+		// Default to 5 frets for a consistent view range
+		const defaultRange = 5;
+
+		// Calculate the minimum range needed to show all notes from the current view position
+		const minRange = Math.max(maxFret - this.viewPosition + 1, 4);
+
+		// Use the default range, but expand if needed to show all notes
+		return Math.max(defaultRange, minRange);
 	}
 
 	async connectedCallback() {
@@ -378,7 +381,7 @@ export class ChordEditor extends LitElement {
 			await this.loadChordData();
 		}
 
-		if (changedProperties.has('fingers') || changedProperties.has('barres')) {
+		if (changedProperties.has('fingers') || changedProperties.has('barres') || changedProperties.has('viewPosition')) {
 			this.renderDiagram();
 		}
 	}
@@ -452,6 +455,40 @@ export class ChordEditor extends LitElement {
 		const divEl = document.createElement('div');
 
 		try {
+			// Convert absolute fret positions to relative positions based on viewPosition
+			// SVGuitar expects positions relative to the position parameter
+			const relativeFingers = this.fingers
+				.map(([string, fret]): Finger | null => {
+					if (typeof fret === 'number') {
+						const relativeFret = fret - this.viewPosition + 1;
+						// Only include fingers that are within the visible range
+						if (relativeFret >= 0 && relativeFret <= this.maxFrets) {
+							return [string, relativeFret];
+						}
+					} else {
+						// Handle 'x' or other non-numeric fret values
+						return [string, fret];
+					}
+					return null;
+				})
+				.filter((f): f is Finger => f !== null);
+
+			const relativeBarres = this.barres
+				.map((barre): Barre | null => {
+					if (typeof barre.fret === 'number') {
+						const relativeFret = barre.fret - this.viewPosition + 1;
+						// Only include barres that are within the visible range
+						if (relativeFret >= 0 && relativeFret <= this.maxFrets) {
+							return {
+								...barre,
+								fret: relativeFret
+							};
+						}
+					}
+					return null;
+				})
+				.filter((b): b is Barre => b !== null);
+
 			const chart = new SVGuitarChord(divEl);
 			chart
 				.configure({
@@ -461,8 +498,8 @@ export class ChordEditor extends LitElement {
 					tuning: [...instrumentObject.strings]
 				})
 				.chord({
-					fingers: this.fingers,
-					barres: this.barres
+					fingers: relativeFingers,
+					barres: relativeBarres
 				})
 				.draw();
 

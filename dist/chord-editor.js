@@ -1,22 +1,22 @@
-import { css as b, LitElement as v, html as a } from "lit";
+import { css as b, LitElement as v, html as l } from "lit";
 import { customElement as y } from "./node_modules/@lit/reactive-element/decorators/custom-element.js";
 import { property as m } from "./node_modules/@lit/reactive-element/decorators/property.js";
-import { state as h } from "./node_modules/@lit/reactive-element/decorators/state.js";
+import { state as c } from "./node_modules/@lit/reactive-element/decorators/state.js";
 import { query as w } from "./node_modules/@lit/reactive-element/decorators/query.js";
 import { SVGuitarChord as x } from "svguitar";
-import { instruments as f, chordToNotes as k, chordOnInstrument as F } from "./music-utils.js";
-import { chordDataService as u } from "./chord-data-service.js";
-var M = Object.defineProperty, C = Object.getOwnPropertyDescriptor, o = (t, i, e, r) => {
-  for (var n = r > 1 ? void 0 : r ? C(i, e) : i, l = t.length - 1, d; l >= 0; l--)
-    (d = t[l]) && (n = (r ? d(i, e, n) : d(n)) || n);
-  return r && n && M(i, e, n), n;
+import { instruments as g, chordToNotes as F, chordOnInstrument as k } from "./music-utils.js";
+import { chordDataService as f } from "./chord-data-service.js";
+var M = Object.defineProperty, C = Object.getOwnPropertyDescriptor, d = (t, i, e, r) => {
+  for (var s = r > 1 ? void 0 : r ? C(i, e) : i, o = t.length - 1, n; o >= 0; o--)
+    (n = t[o]) && (s = (r ? n(i, e, s) : n(s)) || s);
+  return r && s && M(i, e, s), s;
 };
-let s = class extends v {
+let a = class extends v {
   constructor() {
     super(...arguments), this.instrument = "Standard Ukulele", this.chord = "", this.fingers = [], this.barres = [], this.viewPosition = 1, this.isLoading = !1, this.isModified = !1, this.editMode = "finger";
   }
   get numStrings() {
-    const t = f.find(({ name: i }) => i === this.instrument);
+    const t = g.find(({ name: i }) => i === this.instrument);
     return (t == null ? void 0 : t.strings.length) || 4;
   }
   get calculatedPosition() {
@@ -30,26 +30,26 @@ let s = class extends v {
   }
   get maxFrets() {
     const t = [
-      ...this.fingers.map(([, e]) => typeof e == "number" ? e : 0),
-      ...this.barres.map((e) => typeof e.fret == "number" ? e.fret : 0)
-    ], i = Math.max(...t, 0);
-    return this.viewPosition > 1 || i > 4 ? Math.max(i - this.viewPosition + 1, 4) : Math.max(i, 4);
+      ...this.fingers.map(([, s]) => typeof s == "number" ? s : 0),
+      ...this.barres.map((s) => typeof s.fret == "number" ? s.fret : 0)
+    ], i = Math.max(...t, 0), e = 5, r = Math.max(i - this.viewPosition + 1, 4);
+    return Math.max(e, r);
   }
   async connectedCallback() {
     super.connectedCallback(), await this.loadChordData();
   }
   async updated(t) {
-    super.updated(t), (t.has("instrument") || t.has("chord")) && await this.loadChordData(), (t.has("fingers") || t.has("barres")) && this.renderDiagram();
+    super.updated(t), (t.has("instrument") || t.has("chord")) && await this.loadChordData(), (t.has("fingers") || t.has("barres") || t.has("viewPosition")) && this.renderDiagram();
   }
   async loadChordData() {
     if (this.chord) {
       this.isLoading = !0;
       try {
-        const t = await u.getChord(this.instrument, this.chord, !0);
+        const t = await f.getChord(this.instrument, this.chord, !0);
         if (t)
           this.fingers = [...t.fingers], this.barres = [...t.barres], this.viewPosition = this.calculatedPosition, this.isModified = !1;
         else {
-          const i = await u.getChord(this.instrument, this.chord, !1);
+          const i = await f.getChord(this.instrument, this.chord, !1);
           i ? (this.fingers = [...i.fingers], this.barres = [...i.barres], this.viewPosition = this.calculatedPosition, this.isModified = !1) : this.generateDefaultChord();
         }
       } catch (t) {
@@ -60,26 +60,45 @@ let s = class extends v {
     }
   }
   generateDefaultChord() {
-    const t = f.find(({ name: r }) => r === this.instrument);
+    const t = g.find(({ name: r }) => r === this.instrument);
     if (!t) return;
-    const i = F(t), e = k(this.chord);
+    const i = k(t), e = F(this.chord);
     e && e.notes && e.notes.length > 0 && (this.fingers = i(e) || [], this.barres = [], this.viewPosition = this.calculatedPosition, this.isModified = !1);
   }
   renderDiagram() {
     if (!this.diagramContainer) return;
-    const t = f.find(({ name: e }) => e === this.instrument);
+    const t = g.find(({ name: e }) => e === this.instrument);
     if (!t) return;
     this.diagramContainer.innerHTML = "";
     const i = document.createElement("div");
     try {
+      const e = this.fingers.map(([o, n]) => {
+        if (typeof n == "number") {
+          const h = n - this.viewPosition + 1;
+          if (h >= 0 && h <= this.maxFrets)
+            return [o, h];
+        } else
+          return [o, n];
+        return null;
+      }).filter((o) => o !== null), r = this.barres.map((o) => {
+        if (typeof o.fret == "number") {
+          const n = o.fret - this.viewPosition + 1;
+          if (n >= 0 && n <= this.maxFrets)
+            return {
+              ...o,
+              fret: n
+            };
+        }
+        return null;
+      }).filter((o) => o !== null);
       new x(i).configure({
         strings: t.strings.length,
         frets: this.maxFrets,
         position: this.viewPosition,
         tuning: [...t.strings]
       }).chord({
-        fingers: this.fingers,
-        barres: this.barres
+        fingers: e,
+        barres: r
       }).draw(), i.firstChild && (this.diagramContainer.appendChild(i.firstChild), this.setupInteraction());
     } catch (e) {
       console.error("Error rendering diagram:", e);
@@ -91,11 +110,11 @@ let s = class extends v {
     t && t.addEventListener("click", (e) => this.handleDiagramClick(e));
   }
   handleDiagramClick(t) {
-    const e = t.currentTarget.getBoundingClientRect(), r = t.clientX - e.left, n = t.clientY - e.top, l = e.width / (this.numStrings + 1), d = e.height / (this.maxFrets + 2), g = Math.round((e.width - r) / l);
-    let c = Math.round((n - d) / d);
-    c = c + this.viewPosition - 1;
+    const e = t.currentTarget.getBoundingClientRect(), r = t.clientX - e.left, s = t.clientY - e.top, o = e.width / (this.numStrings + 1), n = e.height / (this.maxFrets + 2), h = Math.round((e.width - r) / o);
+    let u = Math.round((s - n) / n);
+    u = u + this.viewPosition - 1;
     const p = this.viewPosition + this.maxFrets - 1;
-    g >= 1 && g <= this.numStrings && c >= 0 && c <= p && this.handlePositionClick(g, c);
+    h >= 1 && h <= this.numStrings && u >= 0 && u <= p && this.handlePositionClick(h, u);
   }
   handlePositionClick(t, i) {
     this.editMode === "finger" ? this.addOrUpdateFinger(t, i) : this.editMode === "remove" && this.removeFinger(t);
@@ -113,7 +132,7 @@ let s = class extends v {
   async saveChord() {
     if (this.chord)
       try {
-        await u.saveUserChord(
+        await f.saveUserChord(
           this.instrument,
           this.chord,
           {
@@ -137,7 +156,7 @@ let s = class extends v {
   async resetToDefault() {
     if (confirm("Reset to default chord? This will discard your changes."))
       try {
-        await u.deleteUserChord(this.instrument, this.chord), await this.loadChordData(), this.dispatchEvent(new CustomEvent("chord-reset", {
+        await f.deleteUserChord(this.instrument, this.chord), await this.loadChordData(), this.dispatchEvent(new CustomEvent("chord-reset", {
           detail: {
             instrument: this.instrument,
             chord: this.chord
@@ -194,15 +213,15 @@ let s = class extends v {
     this.barres.splice(t, 1), this.barres = [...this.barres], this.isModified = !0, this.requestUpdate();
   }
   render() {
-    return this.isLoading ? a`
+    return this.isLoading ? l`
 				<div class='editor'>
 					<div class='info'>Loading...</div>
 				</div>
-			` : this.chord ? a`
+			` : this.chord ? l`
 			<div class='editor'>
 				<div class='header'>
 					<h3>${this.chord} - ${this.instrument}</h3>
-					${this.isModified ? a`<span class='badge modified'>Modified</span>` : a`<span class='badge'>Saved</span>`}
+					${this.isModified ? l`<span class='badge modified'>Modified</span>` : l`<span class='badge'>Saved</span>`}
 				</div>
 
 				<div class='diagram-container'></div>
@@ -247,9 +266,9 @@ let s = class extends v {
 					<div class='control-group'>
 						<label>Finger Positions (${this.fingers.length})</label>
 						<div class='finger-list'>
-							${this.fingers.length === 0 ? a`
+							${this.fingers.length === 0 ? l`
 								<div class='info'>No finger positions. Click the diagram or use "Add Finger" below.</div>
-							` : this.fingers.map((t, i) => a`
+							` : this.fingers.map((t, i) => l`
 								<div class='finger-item'>
 									<div class='finger-inputs'>
 										<label style="color: #a0aec0; font-size: 0.75rem;">String:</label>
@@ -285,9 +304,9 @@ let s = class extends v {
 					<div class='control-group'>
 						<label>Barre Positions (${this.barres.length})</label>
 						<div class='finger-list'>
-							${this.barres.length === 0 ? a`
+							${this.barres.length === 0 ? l`
 								<div class='info'>No barres. Use "Add Barre" below to create one.</div>
-							` : this.barres.map((t, i) => a`
+							` : this.barres.map((t, i) => l`
 								<div class='finger-item'>
 									<div class='finger-inputs'>
 										<label style="color: #a0aec0; font-size: 0.75rem;">From:</label>
@@ -355,14 +374,14 @@ let s = class extends v {
 					${this.editMode === "finger" ? "Click on the diagram to add or update finger positions." : "Click on a finger position to remove it."}
 				</div>
 			</div>
-		` : a`
+		` : l`
 				<div class='editor'>
 					<div class='error'>No chord specified</div>
 				</div>
 			`;
   }
 };
-s.styles = b`
+a.styles = b`
 	:host {
 		display: block;
 		width: 100%;
@@ -637,36 +656,36 @@ s.styles = b`
 		font-style: italic;
 	}
 	`;
-o([
+d([
   m({ type: String })
-], s.prototype, "instrument", 2);
-o([
+], a.prototype, "instrument", 2);
+d([
   m({ type: String })
-], s.prototype, "chord", 2);
-o([
-  h()
-], s.prototype, "fingers", 2);
-o([
-  h()
-], s.prototype, "barres", 2);
-o([
-  h()
-], s.prototype, "viewPosition", 2);
-o([
-  h()
-], s.prototype, "isLoading", 2);
-o([
-  h()
-], s.prototype, "isModified", 2);
-o([
-  h()
-], s.prototype, "editMode", 2);
-o([
+], a.prototype, "chord", 2);
+d([
+  c()
+], a.prototype, "fingers", 2);
+d([
+  c()
+], a.prototype, "barres", 2);
+d([
+  c()
+], a.prototype, "viewPosition", 2);
+d([
+  c()
+], a.prototype, "isLoading", 2);
+d([
+  c()
+], a.prototype, "isModified", 2);
+d([
+  c()
+], a.prototype, "editMode", 2);
+d([
   w(".diagram-container")
-], s.prototype, "diagramContainer", 2);
-s = o([
+], a.prototype, "diagramContainer", 2);
+a = d([
   y("chord-editor")
-], s);
+], a);
 export {
-  s as ChordEditor
+  a as ChordEditor
 };
