@@ -1,5 +1,5 @@
 import { LitElement, css, html, type PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import './chord-diagram.js';
 
 /**
@@ -16,7 +16,7 @@ import './chord-diagram.js';
  * <chord-list instrument="Standard Guitar" chords='["E", "A", "D"]'></chord-list>
  * ```
  */
-@customElement('chord-list')
+// @customElement('chord-list')
 export class ChordList extends LitElement {
 	
 	/**
@@ -142,4 +142,8 @@ export class ChordList extends LitElement {
 			</div>
 		`;
 	}
+}
+
+if(!customElements.get('chord-list')) {
+	customElements.define('chord-list', ChordList);
 }

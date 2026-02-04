@@ -1,6 +1,6 @@
 {
-  "name": "chord-component",
-  "version": "0.1.2",
+  "name": "@parent-tobias/chord-component",
+  "version": "1.1.0",
   "description": "Lit-based web components for displaying musical chord diagrams and chord lists",
   "type": "module",
   "main": "dist/index.js",

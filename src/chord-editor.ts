@@ -1,5 +1,5 @@
 import { LitElement, css, html } from 'lit';
-import { customElement, property, state, query } from 'lit/decorators.js';
+import { property, state, query } from 'lit/decorators.js';
 import { SVGuitarChord } from 'svguitar';
 import type { Finger, Barre } from 'svguitar';
 
@@ -23,7 +23,8 @@ import { chordDataService } from './chord-data-service.js';
  * <chord-editor chord="C" instrument="Standard Ukulele"></chord-editor>
  * ```
  */
-@customElement('chord-editor')
+
+// @customElement('chord-editor')
 export class ChordEditor extends LitElement {
 
 	static styles = css`
@@ -816,14 +817,14 @@ export class ChordEditor extends LitElement {
 											type="number"
 											min="1"
 											max="${this.numStrings}"
-											.value="${finger[0]}"
+											.value="${finger[0].toString()}"
 											@input=${(e: Event) => this.updateFingerString(index, (e.target as HTMLInputElement).value)}
 										/>
 										<label style="color: #a0aec0; font-size: 0.75rem;">Fret:</label>
 										<input
 											type="number"
 											min="0"
-											.value="${finger[1]}"
+											.value="${finger[1].toString()}"
 											@input=${(e: Event) => this.updateFingerFret(index, (e.target as HTMLInputElement).value)}
 										/>
 									</div>
@@ -854,7 +855,7 @@ export class ChordEditor extends LitElement {
 											type="number"
 											min="1"
 											max="${this.numStrings}"
-											.value="${barre.fromString}"
+											.value="${barre.fromString.toString()}"
 											@input=${(e: Event) => this.updateBarreFromString(index, (e.target as HTMLInputElement).value)}
 										/>
 										<label style="color: #a0aec0; font-size: 0.75rem;">To:</label>
@@ -862,14 +863,14 @@ export class ChordEditor extends LitElement {
 											type="number"
 											min="1"
 											max="${this.numStrings}"
-											.value="${barre.toString}"
+											.value="${barre.toString.toString()}"
 											@input=${(e: Event) => this.updateBarreToString(index, (e.target as HTMLInputElement).value)}
 										/>
 										<label style="color: #a0aec0; font-size: 0.75rem;">Fret:</label>
 										<input
 											type="number"
 											min="0"
-											.value="${barre.fret}"
+											.value="${barre.fret.toString()}"
 											@input=${(e: Event) => this.updateBarreFret(index, (e.target as HTMLInputElement).value)}
 										/>
 									</div>
@@ -916,4 +917,8 @@ export class ChordEditor extends LitElement {
 			</div>
 		`;
 	}
+}
+
+if(!customElements.get('chord-editor')) {
+	customElements.define('chord-editor', ChordEditor);
 }

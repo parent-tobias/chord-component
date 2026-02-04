@@ -1,5 +1,5 @@
 import { LitElement, css, html } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { SVGuitarChord } from 'svguitar';
 
 import { instruments, chordOnInstrument, chordToNotes } from './music-utils.js';
@@ -19,8 +19,12 @@ import type { InstrumentDefault } from './default-chords.js';
  * <chord-diagram chord="C" instrument="Standard Ukulele"></chord-diagram>
  * <chord-diagram chord="Am7" instrument="Standard Guitar"></chord-diagram>
  * ```
+ * 
+ * Remove the customElement decorator as it's not going to handle re-registration gracefully.
+ * Instead, register the component manually if it has not already been.
  */
-@customElement('chord-diagram')
+
+// @customElement('chord-diagram')
 export class ChordDiagram extends LitElement {
 
 	static styles = css`
@@ -252,4 +256,8 @@ export class ChordDiagram extends LitElement {
 			`;
 		}
 	}
+}
+
+if(!customElements.get('chord-diagram')) {
+	customElements.define('chord-diagram', ChordDiagram);
 }
