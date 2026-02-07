@@ -1,22 +1,21 @@
-import { css as b, LitElement as v, html as l } from "lit";
-import { customElement as y } from "./node_modules/@lit/reactive-element/decorators/custom-element.js";
-import { property as m } from "./node_modules/@lit/reactive-element/decorators/property.js";
+import { LitElement as y, css as w, html as d } from "lit";
+import { property as b } from "./node_modules/@lit/reactive-element/decorators/property.js";
 import { state as c } from "./node_modules/@lit/reactive-element/decorators/state.js";
-import { query as w } from "./node_modules/@lit/reactive-element/decorators/query.js";
-import { SVGuitarChord as x } from "svguitar";
-import { instruments as g, chordToNotes as F, chordOnInstrument as k } from "./music-utils.js";
+import { query as x } from "./node_modules/@lit/reactive-element/decorators/query.js";
+import { SVGuitarChord as C } from "svguitar";
+import { getInstrument as g, chordToNotes as k, chordOnInstrument as F } from "./music-utils.js";
 import { chordDataService as f } from "./chord-data-service.js";
-var M = Object.defineProperty, C = Object.getOwnPropertyDescriptor, d = (t, i, e, r) => {
-  for (var s = r > 1 ? void 0 : r ? C(i, e) : i, o = t.length - 1, n; o >= 0; o--)
-    (n = t[o]) && (s = (r ? n(i, e, s) : n(s)) || s);
-  return r && s && M(i, e, s), s;
+var M = Object.defineProperty, h = (p, t, i, e) => {
+  for (var r = void 0, o = p.length - 1, s; o >= 0; o--)
+    (s = p[o]) && (r = s(t, i, r) || r);
+  return r && M(t, i, r), r;
 };
-let a = class extends v {
+const m = class m extends y {
   constructor() {
-    super(...arguments), this.instrument = "Standard Ukulele", this.chord = "", this.fingers = [], this.barres = [], this.viewPosition = 1, this.isLoading = !1, this.isModified = !1, this.editMode = "finger";
+    super(...arguments), this.instrument = "ukulele", this.chord = "", this.fingers = [], this.barres = [], this.viewPosition = 1, this.isLoading = !1, this.isModified = !1, this.editMode = "finger";
   }
   get numStrings() {
-    const t = g.find(({ name: i }) => i === this.instrument);
+    const t = g(this.instrument);
     return (t == null ? void 0 : t.strings.length) || 4;
   }
   get calculatedPosition() {
@@ -30,8 +29,8 @@ let a = class extends v {
   }
   get maxFrets() {
     const t = [
-      ...this.fingers.map(([, s]) => typeof s == "number" ? s : 0),
-      ...this.barres.map((s) => typeof s.fret == "number" ? s.fret : 0)
+      ...this.fingers.map(([, o]) => typeof o == "number" ? o : 0),
+      ...this.barres.map((o) => typeof o.fret == "number" ? o.fret : 0)
     ], i = Math.max(...t, 0), e = 5, r = Math.max(i - this.viewPosition + 1, 4);
     return Math.max(e, r);
   }
@@ -60,38 +59,38 @@ let a = class extends v {
     }
   }
   generateDefaultChord() {
-    const t = g.find(({ name: r }) => r === this.instrument);
+    const t = g(this.instrument);
     if (!t) return;
-    const i = k(t), e = F(this.chord);
+    const i = F(t), e = k(this.chord);
     e && e.notes && e.notes.length > 0 && (this.fingers = i(e) || [], this.barres = [], this.viewPosition = this.calculatedPosition, this.isModified = !1);
   }
   renderDiagram() {
     if (!this.diagramContainer) return;
-    const t = g.find(({ name: e }) => e === this.instrument);
+    const t = g(this.instrument);
     if (!t) return;
     this.diagramContainer.innerHTML = "";
     const i = document.createElement("div");
     try {
-      const e = this.fingers.map(([o, n]) => {
-        if (typeof n == "number") {
-          const h = n - this.viewPosition + 1;
-          if (h >= 0 && h <= this.maxFrets)
-            return [o, h];
+      const e = this.fingers.map(([s, a]) => {
+        if (typeof a == "number") {
+          const l = a - this.viewPosition + 1;
+          if (l >= 0 && l <= this.maxFrets)
+            return [s, l];
         } else
-          return [o, n];
+          return [s, a];
         return null;
-      }).filter((o) => o !== null), r = this.barres.map((o) => {
-        if (typeof o.fret == "number") {
-          const n = o.fret - this.viewPosition + 1;
-          if (n >= 0 && n <= this.maxFrets)
+      }).filter((s) => s !== null), r = this.barres.map((s) => {
+        if (typeof s.fret == "number") {
+          const a = s.fret - this.viewPosition + 1;
+          if (a >= 0 && a <= this.maxFrets)
             return {
-              ...o,
-              fret: n
+              ...s,
+              fret: a
             };
         }
         return null;
-      }).filter((o) => o !== null);
-      new x(i).configure({
+      }).filter((s) => s !== null);
+      new C(i).configure({
         strings: t.strings.length,
         frets: this.maxFrets,
         position: this.viewPosition,
@@ -110,24 +109,31 @@ let a = class extends v {
     t && t.addEventListener("click", (e) => this.handleDiagramClick(e));
   }
   handleDiagramClick(t) {
-    const e = t.currentTarget.getBoundingClientRect(), r = t.clientX - e.left, s = t.clientY - e.top, o = e.width / (this.numStrings + 1), n = e.height / (this.maxFrets + 2), h = Math.round((e.width - r) / o);
-    let u = Math.round((s - n) / n);
+    const e = t.currentTarget.getBoundingClientRect(), r = t.clientX - e.left, o = t.clientY - e.top, s = e.width / (this.numStrings + 1), a = e.height / (this.maxFrets + 2), l = Math.round((e.width - r) / s);
+    let u = Math.round((o - a) / a);
     u = u + this.viewPosition - 1;
-    const p = this.viewPosition + this.maxFrets - 1;
-    h >= 1 && h <= this.numStrings && u >= 0 && u <= p && this.handlePositionClick(h, u);
+    const v = this.viewPosition + this.maxFrets - 1;
+    l >= 1 && l <= this.numStrings && u >= 0 && u <= v && this.handlePositionClick(l, u);
   }
   handlePositionClick(t, i) {
     this.editMode === "finger" ? this.addOrUpdateFinger(t, i) : this.editMode === "remove" && this.removeFinger(t);
   }
+  emitChordChanged() {
+    this.dispatchEvent(new CustomEvent("chord-changed", {
+      detail: { fingers: this.fingers, barres: this.barres },
+      bubbles: !0,
+      composed: !0
+    }));
+  }
   addOrUpdateFinger(t, i) {
     const e = this.fingers.findIndex(([r]) => r === t);
-    e >= 0 ? this.fingers[e] = [t, i] : this.fingers.push([t, i]), this.fingers = [...this.fingers], this.isModified = !0, this.requestUpdate();
+    e >= 0 ? this.fingers[e] = [t, i] : this.fingers.push([t, i]), this.fingers = [...this.fingers], this.isModified = !0, this.emitChordChanged(), this.requestUpdate();
   }
   removeFinger(t) {
-    this.fingers = this.fingers.filter(([i]) => i !== t), this.isModified = !0, this.requestUpdate();
+    this.fingers = this.fingers.filter(([i]) => i !== t), this.isModified = !0, this.emitChordChanged(), this.requestUpdate();
   }
   removeFingerByIndex(t) {
-    this.fingers.splice(t, 1), this.fingers = [...this.fingers], this.isModified = !0, this.requestUpdate();
+    this.fingers.splice(t, 1), this.fingers = [...this.fingers], this.isModified = !0, this.emitChordChanged(), this.requestUpdate();
   }
   async saveChord() {
     if (this.chord)
@@ -169,7 +175,7 @@ let a = class extends v {
       }
   }
   clearAll() {
-    this.fingers = [], this.barres = [], this.isModified = !0, this.requestUpdate();
+    this.fingers = [], this.barres = [], this.isModified = !0, this.emitChordChanged(), this.requestUpdate();
   }
   shiftViewPosition(t) {
     const i = Math.max(1, this.viewPosition + t);
@@ -180,14 +186,14 @@ let a = class extends v {
   }
   updateFingerString(t, i) {
     const e = parseInt(i);
-    !isNaN(e) && e >= 1 && e <= this.numStrings && (this.fingers[t] = [e, this.fingers[t][1]], this.fingers = [...this.fingers], this.isModified = !0, this.requestUpdate());
+    !isNaN(e) && e >= 1 && e <= this.numStrings && (this.fingers[t] = [e, this.fingers[t][1]], this.fingers = [...this.fingers], this.isModified = !0, this.emitChordChanged(), this.requestUpdate());
   }
   updateFingerFret(t, i) {
     const e = parseInt(i);
-    !isNaN(e) && e >= 0 && (this.fingers[t] = [this.fingers[t][0], e], this.fingers = [...this.fingers], this.isModified = !0, this.requestUpdate());
+    !isNaN(e) && e >= 0 && (this.fingers[t] = [this.fingers[t][0], e], this.fingers = [...this.fingers], this.isModified = !0, this.emitChordChanged(), this.requestUpdate());
   }
   addNewFinger() {
-    this.fingers.push([1, 0]), this.fingers = [...this.fingers], this.isModified = !0, this.requestUpdate();
+    this.fingers.push([1, 0]), this.fingers = [...this.fingers], this.isModified = !0, this.emitChordChanged(), this.requestUpdate();
   }
   addBarre() {
     this.barres.push({
@@ -195,33 +201,34 @@ let a = class extends v {
       toString: 1,
       fret: this.viewPosition,
       text: "1"
-    }), this.barres = [...this.barres], this.isModified = !0, this.requestUpdate();
+    }), this.barres = [...this.barres], this.isModified = !0, this.emitChordChanged(), this.requestUpdate();
   }
   updateBarreFromString(t, i) {
     const e = parseInt(i);
-    !isNaN(e) && e >= 1 && e <= this.numStrings && (this.barres[t].fromString = e, this.barres = [...this.barres], this.isModified = !0, this.requestUpdate());
+    !isNaN(e) && e >= 1 && e <= this.numStrings && (this.barres[t].fromString = e, this.barres = [...this.barres], this.isModified = !0, this.emitChordChanged(), this.requestUpdate());
   }
   updateBarreToString(t, i) {
     const e = parseInt(i);
-    !isNaN(e) && e >= 1 && e <= this.numStrings && (this.barres[t].toString = e, this.barres = [...this.barres], this.isModified = !0, this.requestUpdate());
+    !isNaN(e) && e >= 1 && e <= this.numStrings && (this.barres[t].toString = e, this.barres = [...this.barres], this.isModified = !0, this.emitChordChanged(), this.requestUpdate());
   }
   updateBarreFret(t, i) {
     const e = parseInt(i);
-    !isNaN(e) && e >= 0 && (this.barres[t].fret = e, this.barres = [...this.barres], this.isModified = !0, this.requestUpdate());
+    !isNaN(e) && e >= 0 && (this.barres[t].fret = e, this.barres = [...this.barres], this.isModified = !0, this.emitChordChanged(), this.requestUpdate());
   }
   removeBarreByIndex(t) {
-    this.barres.splice(t, 1), this.barres = [...this.barres], this.isModified = !0, this.requestUpdate();
+    this.barres.splice(t, 1), this.barres = [...this.barres], this.isModified = !0, this.emitChordChanged(), this.requestUpdate();
   }
   render() {
-    return this.isLoading ? l`
+    var t;
+    return this.isLoading ? d`
 				<div class='editor'>
 					<div class='info'>Loading...</div>
 				</div>
-			` : this.chord ? l`
+			` : this.chord ? d`
 			<div class='editor'>
 				<div class='header'>
-					<h3>${this.chord} - ${this.instrument}</h3>
-					${this.isModified ? l`<span class='badge modified'>Modified</span>` : l`<span class='badge'>Saved</span>`}
+					<h3>${this.chord} - ${((t = g(this.instrument)) == null ? void 0 : t.name) ?? this.instrument}</h3>
+					${this.isModified ? d`<span class='badge modified'>Modified</span>` : d`<span class='badge'>Saved</span>`}
 				</div>
 
 				<div class='diagram-container'></div>
@@ -266,9 +273,9 @@ let a = class extends v {
 					<div class='control-group'>
 						<label>Finger Positions (${this.fingers.length})</label>
 						<div class='finger-list'>
-							${this.fingers.length === 0 ? l`
+							${this.fingers.length === 0 ? d`
 								<div class='info'>No finger positions. Click the diagram or use "Add Finger" below.</div>
-							` : this.fingers.map((t, i) => l`
+							` : this.fingers.map((i, e) => d`
 								<div class='finger-item'>
 									<div class='finger-inputs'>
 										<label style="color: #a0aec0; font-size: 0.75rem;">String:</label>
@@ -276,20 +283,20 @@ let a = class extends v {
 											type="number"
 											min="1"
 											max="${this.numStrings}"
-											.value="${t[0]}"
-											@input=${(e) => this.updateFingerString(i, e.target.value)}
+											.value="${i[0].toString()}"
+											@input=${(r) => this.updateFingerString(e, r.target.value)}
 										/>
 										<label style="color: #a0aec0; font-size: 0.75rem;">Fret:</label>
 										<input
 											type="number"
 											min="0"
-											.value="${t[1]}"
-											@input=${(e) => this.updateFingerFret(i, e.target.value)}
+											.value="${i[1].toString()}"
+											@input=${(r) => this.updateFingerFret(e, r.target.value)}
 										/>
 									</div>
 									<button
 										class='danger'
-										@click=${() => this.removeFingerByIndex(i)}
+										@click=${() => this.removeFingerByIndex(e)}
 									>
 										×
 									</button>
@@ -304,9 +311,9 @@ let a = class extends v {
 					<div class='control-group'>
 						<label>Barre Positions (${this.barres.length})</label>
 						<div class='finger-list'>
-							${this.barres.length === 0 ? l`
+							${this.barres.length === 0 ? d`
 								<div class='info'>No barres. Use "Add Barre" below to create one.</div>
-							` : this.barres.map((t, i) => l`
+							` : this.barres.map((i, e) => d`
 								<div class='finger-item'>
 									<div class='finger-inputs'>
 										<label style="color: #a0aec0; font-size: 0.75rem;">From:</label>
@@ -314,28 +321,28 @@ let a = class extends v {
 											type="number"
 											min="1"
 											max="${this.numStrings}"
-											.value="${t.fromString}"
-											@input=${(e) => this.updateBarreFromString(i, e.target.value)}
+											.value="${i.fromString.toString()}"
+											@input=${(r) => this.updateBarreFromString(e, r.target.value)}
 										/>
 										<label style="color: #a0aec0; font-size: 0.75rem;">To:</label>
 										<input
 											type="number"
 											min="1"
 											max="${this.numStrings}"
-											.value="${t.toString}"
-											@input=${(e) => this.updateBarreToString(i, e.target.value)}
+											.value="${i.toString.toString()}"
+											@input=${(r) => this.updateBarreToString(e, r.target.value)}
 										/>
 										<label style="color: #a0aec0; font-size: 0.75rem;">Fret:</label>
 										<input
 											type="number"
 											min="0"
-											.value="${t.fret}"
-											@input=${(e) => this.updateBarreFret(i, e.target.value)}
+											.value="${i.fret.toString()}"
+											@input=${(r) => this.updateBarreFret(e, r.target.value)}
 										/>
 									</div>
 									<button
 										class='danger'
-										@click=${() => this.removeBarreByIndex(i)}
+										@click=${() => this.removeBarreByIndex(e)}
 									>
 										×
 									</button>
@@ -374,14 +381,14 @@ let a = class extends v {
 					${this.editMode === "finger" ? "Click on the diagram to add or update finger positions." : "Click on a finger position to remove it."}
 				</div>
 			</div>
-		` : l`
+		` : d`
 				<div class='editor'>
 					<div class='error'>No chord specified</div>
 				</div>
 			`;
   }
 };
-a.styles = b`
+m.styles = w`
 	:host {
 		display: block;
 		width: 100%;
@@ -656,36 +663,35 @@ a.styles = b`
 		font-style: italic;
 	}
 	`;
-d([
-  m({ type: String })
-], a.prototype, "instrument", 2);
-d([
-  m({ type: String })
-], a.prototype, "chord", 2);
-d([
+let n = m;
+h([
+  b({ type: String })
+], n.prototype, "instrument");
+h([
+  b({ type: String })
+], n.prototype, "chord");
+h([
   c()
-], a.prototype, "fingers", 2);
-d([
+], n.prototype, "fingers");
+h([
   c()
-], a.prototype, "barres", 2);
-d([
+], n.prototype, "barres");
+h([
   c()
-], a.prototype, "viewPosition", 2);
-d([
+], n.prototype, "viewPosition");
+h([
   c()
-], a.prototype, "isLoading", 2);
-d([
+], n.prototype, "isLoading");
+h([
   c()
-], a.prototype, "isModified", 2);
-d([
+], n.prototype, "isModified");
+h([
   c()
-], a.prototype, "editMode", 2);
-d([
-  w(".diagram-container")
-], a.prototype, "diagramContainer", 2);
-a = d([
-  y("chord-editor")
-], a);
+], n.prototype, "editMode");
+h([
+  x(".diagram-container")
+], n.prototype, "diagramContainer");
+customElements.get("chord-editor") || customElements.define("chord-editor", n);
 export {
-  a as ChordEditor
+  n as ChordEditor
 };

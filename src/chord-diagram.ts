@@ -2,26 +2,27 @@ import { LitElement, css, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { SVGuitarChord } from 'svguitar';
 
-import { instruments, chordOnInstrument, chordToNotes } from './music-utils.js';
+import { getInstrument, chordOnInstrument, chordToNotes } from './music-utils.js';
 import { chordDataService } from './chord-data-service.js';
 import type { InstrumentDefault } from './default-chords.js';
+import type { Finger, Barre } from 'svguitar';
 
 /**
  * A web component that displays a chord diagram for various instruments.
- * 
+ *
  * @element chord-diagram
- * 
- * @attr {string} instrument - The instrument to display the chord for (default: 'Standard Ukulele')
+ *
+ * @attr {string} instrument - Instrument ID (default: 'ukulele'). See `instruments` for built-in IDs.
  * @attr {string} chord - The chord name to display (e.g., 'C', 'Am7', 'F#dim')
- * 
+ *
+ * @prop {Finger[]} chordFingers - Optional. Set via JS to provide finger data directly, bypassing chord lookup.
+ * @prop {Barre[]} chordBarres - Optional. Set via JS to provide barre data directly, bypassing chord lookup.
+ *
  * @example
  * ```html
- * <chord-diagram chord="C" instrument="Standard Ukulele"></chord-diagram>
- * <chord-diagram chord="Am7" instrument="Standard Guitar"></chord-diagram>
+ * <chord-diagram chord="C" instrument="ukulele"></chord-diagram>
+ * <chord-diagram chord="Am7" instrument="guitar"></chord-diagram>
  * ```
- * 
- * Remove the customElement decorator as it's not going to handle re-registration gracefully.
- * Instead, register the component manually if it has not already been.
  */
 
 // @customElement('chord-diagram')
@@ -75,12 +76,12 @@ export class ChordDiagram extends LitElement {
 	`
 
 	/**
-	 * The instrument to display the chord for
+	 * The instrument ID to display the chord for
 	 */
 	@property({
 		type: String
 	})
-	instrument = 'Standard Ukulele';
+	instrument = 'ukulele';
 
 	/**
 	 * The chord name to display
@@ -89,6 +90,18 @@ export class ChordDiagram extends LitElement {
 		type: String
 	})
 	chord = '';
+
+	/**
+	 * Optional finger positions set via JS. When provided, bypasses chord name lookup.
+	 */
+	@property({ attribute: false })
+	chordFingers?: Finger[];
+
+	/**
+	 * Optional barre positions set via JS. When provided, bypasses chord name lookup.
+	 */
+	@property({ attribute: false })
+	chordBarres?: Barre[];
 
 	@query('.diagram')
 	container?: HTMLElement;
@@ -151,16 +164,8 @@ export class ChordDiagram extends LitElement {
 			`;
 		}
 
-		if (!this.chord) {
-			return html`
-				<div class='chord'>
-					<div class='error'>No chord specified</div>
-				</div>
-			`;
-		}
+		const instrumentObject = getInstrument(this.instrument);
 
-		const instrumentObject = instruments.find(({name}) => name === this.instrument);
-		
 		if (!instrumentObject) {
 			return html`
 				<div class='chord'>
@@ -170,8 +175,24 @@ export class ChordDiagram extends LitElement {
 			`;
 		}
 
+		// If JS properties are set, use them directly (skip chord lookup entirely)
+		if (this.chordFingers) {
+			return this.renderChart(instrumentObject, {
+				fingers: this.chordFingers,
+				barres: this.chordBarres ?? []
+			});
+		}
+
+		if (!this.chord) {
+			return html`
+				<div class='chord'>
+					<div class='error'>No chord specified</div>
+				</div>
+			`;
+		}
+
 		const chordFinder = chordOnInstrument(instrumentObject);
-		
+
 		// Given the chord name (G7, Bbmin), we need the notes in the chord
 		const chordObject = chordToNotes(this.chord);
 
@@ -192,6 +213,13 @@ export class ChordDiagram extends LitElement {
 				fingers: chordFinder(chordObject) || []
 			};
 
+		return this.renderChart(instrumentObject, chartSettings);
+	}
+
+	private renderChart(
+		instrumentObject: import('./music-utils.js').MuInstrument,
+		chartSettings: { fingers: Finger[]; barres: Barre[] }
+	) {
 		// Auto-calculate position based on chord data (not stored with chord)
 		const arrayOfFrets: number[] = chartSettings.fingers.map(([, fret]): number =>
 			typeof fret === 'number' ? fret : Infinity
@@ -224,6 +252,7 @@ export class ChordDiagram extends LitElement {
 
 		// Create a container div for SVGuitar
 		const divEl = document.createElement("div");
+		const label = this.chord ? this.chord.replace(/(maj)$/, '') : '';
 
 		try {
 			const chart = new SVGuitarChord(divEl);
@@ -242,7 +271,7 @@ export class ChordDiagram extends LitElement {
 
 			return html`
 				<div class='chord'>
-					<span>${this.chord.replace(/(maj)$/, '')}</span>
+					${label ? html`<span>${label}</span>` : ''}
 					<div class='diagram'>${divEl.firstChild}</div>
 				</div>
 			`;
@@ -250,7 +279,7 @@ export class ChordDiagram extends LitElement {
 			console.error('Error generating chord diagram:', error);
 			return html`
 				<div class='chord'>
-					<span>${this.chord.replace(/(maj)$/, '')}</span>
+					${label ? html`<span>${label}</span>` : ''}
 					<div class='error'>Error generating diagram</div>
 				</div>
 			`;

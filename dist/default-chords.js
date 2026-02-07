@@ -1,5 +1,5 @@
 const r = {
-  "Standard Ukulele": {
+  ukulele: {
     Cm: {
       barres: [],
       fingers: [
@@ -225,7 +225,7 @@ const r = {
       ]
     }
   },
-  "Standard Guitar": {
+  guitar: {
     C: {
       barres: [],
       fingers: [

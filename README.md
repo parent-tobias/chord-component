@@ -4,20 +4,21 @@ Lit-based web components for displaying musical chord diagrams and chord lists a
 
 ## Features
 
-- 🎸 Support for multiple instruments (Ukulele, Guitar, Mandolin)
-- 🎵 Comprehensive chord library with major, minor, 7th, and extended chords
-- ✏️ **Interactive chord editor** for creating custom fingerings
-- 💾 **Persistent storage** with IndexedDB for user-defined chords
-- 🎯 **High-position chord support** with automatic position markers
-- 📱 Responsive design with container queries
-- 🎨 Dark theme optimized
-- ⚡ Built with Lit for fast, efficient rendering
-- 🔧 TypeScript support with full type definitions
+- Support for multiple instruments (Ukulele, Guitar, Mandolin) plus custom instrument registration
+- Comprehensive chord library with major, minor, 7th, and extended chords
+- Interactive chord editor for creating custom fingerings
+- Persistent storage with IndexedDB for user-defined chords
+- High-position chord support with automatic position markers
+- JS-only properties for passing chord data directly (no JSON-in-attributes)
+- Responsive design with container queries
+- Dark theme optimized
+- Built with Lit for fast, efficient rendering
+- TypeScript support with full type definitions
 
 ## Installation
 
 ```bash
-npm install chord-component
+npm install @parent-tobias/chord-component
 ```
 
 ## Quick Start
@@ -29,16 +30,16 @@ npm install chord-component
 <html>
 <head>
     <script type="module">
-        import 'chord-component';
+        import '@parent-tobias/chord-component';
     </script>
 </head>
 <body>
     <!-- Single chord diagram -->
-    <chord-diagram chord="C" instrument="Standard Ukulele"></chord-diagram>
-    
+    <chord-diagram chord="C" instrument="ukulele"></chord-diagram>
+
     <!-- Chord list -->
-    <chord-list 
-        instrument="Standard Ukulele" 
+    <chord-list
+        instrument="ukulele"
         chords='["C", "F", "G", "Am"]'>
     </chord-list>
 </body>
@@ -48,9 +49,9 @@ npm install chord-component
 ### Import specific components
 
 ```javascript
-import 'chord-component/chord-diagram';
-import 'chord-component/chord-list';
-import 'chord-component/chord-editor';
+import '@parent-tobias/chord-component/chord-diagram';
+import '@parent-tobias/chord-component/chord-list';
+import '@parent-tobias/chord-component/chord-editor';
 ```
 
 ### Import utilities and services
@@ -58,11 +59,13 @@ import 'chord-component/chord-editor';
 ```javascript
 import {
     instruments,
+    getInstrument,       // Look up instrument by ID
+    registerInstrument,  // Register custom instruments
     chordToNotes,
     systemDefaultChords,
-    chordDataService,  // Data management service
-    indexedDBService   // IndexedDB wrapper
-} from 'chord-component';
+    chordDataService,
+    indexedDBService
+} from '@parent-tobias/chord-component';
 ```
 
 ## Components
@@ -73,8 +76,15 @@ Displays a single chord diagram with fretboard visualization.
 
 #### Attributes
 
-- **`chord`** (string, required): The chord name (e.g., "C", "Am7", "F#dim")
-- **`instrument`** (string, optional): The instrument type (default: "Standard Ukulele")
+- **`chord`** (string): The chord name (e.g., "C", "Am7", "F#dim")
+- **`instrument`** (string): Instrument ID (default: `"ukulele"`)
+
+#### JS Properties
+
+- **`chordFingers`** (Finger[]): Set via JS to provide finger data directly, bypassing chord name lookup.
+- **`chordBarres`** (Barre[]): Set via JS to provide barre data directly, bypassing chord name lookup.
+
+These properties are not available as HTML attributes &mdash; they are set via JavaScript only, avoiding the JSON-in-attributes anti-pattern.
 
 #### Examples
 
@@ -83,10 +93,17 @@ Displays a single chord diagram with fretboard visualization.
 <chord-diagram chord="C"></chord-diagram>
 
 <!-- Guitar chord -->
-<chord-diagram chord="Em" instrument="Standard Guitar"></chord-diagram>
+<chord-diagram chord="Em" instrument="guitar"></chord-diagram>
 
 <!-- Complex chord -->
-<chord-diagram chord="Cmaj7" instrument="Standard Ukulele"></chord-diagram>
+<chord-diagram chord="Cmaj7" instrument="ukulele"></chord-diagram>
+```
+
+```javascript
+// Direct data via JS properties (e.g., displaying a chord variation)
+const el = document.querySelector('chord-diagram');
+el.chordFingers = [[1, 2], [2, 1]];
+el.chordBarres = [];
 ```
 
 ### `<chord-list>`
@@ -95,50 +112,50 @@ Displays multiple chord diagrams in a responsive grid layout.
 
 #### Attributes
 
-- **`instrument`** (string, optional): The instrument type (default: "Standard Ukulele")
-- **`chords`** (string|array, required): JSON string or array of chord names
+- **`instrument`** (string): Instrument ID (default: `"ukulele"`)
+- **`chords`** (string|array): JSON string or array of chord names
 
 #### Examples
 
 ```html
-<!-- Array of chords -->
 <chord-list
-    instrument="Standard Ukulele"
+    instrument="ukulele"
     chords='["C", "F", "G", "Am"]'>
 </chord-list>
 
-<!-- More complex chord progression -->
 <chord-list
-    instrument="Standard Guitar"
+    instrument="guitar"
     chords='["Cmaj7", "Dm7", "G7", "Em7", "Am7"]'>
 </chord-list>
 ```
 
-### `<chord-editor>` ✨ NEW
+### `<chord-editor>`
 
-**Interactive editor for creating and customizing chord diagrams.**
-
-Create custom chord fingerings with visual and text-based editing. All custom chords are automatically saved to IndexedDB and persist across sessions.
+Interactive editor for creating and customizing chord diagrams. Custom chords are automatically saved to IndexedDB and persist across sessions.
 
 #### Attributes
 
-- **`chord`** (string, required): The chord name to edit
-- **`instrument`** (string, optional): The instrument type (default: "Standard Ukulele")
+- **`chord`** (string): The chord name to edit
+- **`instrument`** (string): Instrument ID (default: `"ukulele"`)
 
 #### Events
 
-- **`chord-saved`**: Fired when user saves a custom chord
-- **`chord-reset`**: Fired when user resets to default
+- **`chord-changed`**: Fired on every edit (finger/barre add, remove, or update). Detail: `{ fingers, barres }`
+- **`chord-saved`**: Fired when user saves a custom chord. Detail: `{ instrument, chord, data }`
+- **`chord-reset`**: Fired when user resets to default. Detail: `{ instrument, chord }`
 
 #### Examples
 
 ```html
-<!-- Basic editor -->
-<chord-editor chord="C" instrument="Standard Ukulele"></chord-editor>
+<chord-editor chord="C" instrument="ukulele"></chord-editor>
 
-<!-- Listen for save events -->
 <script type="module">
     const editor = document.querySelector('chord-editor');
+
+    // Live preview on every edit
+    editor.addEventListener('chord-changed', (e) => {
+        console.log('Editing:', e.detail.fingers, e.detail.barres);
+    });
 
     editor.addEventListener('chord-saved', (e) => {
         console.log('Saved:', e.detail.chord, e.detail.data);
@@ -157,32 +174,36 @@ Create custom chord fingerings with visual and text-based editing. All custom ch
 
 See [CHORD_EDITOR.md](./CHORD_EDITOR.md) for complete documentation.
 
-#### Creating Custom Chords
+## Built-in Instrument IDs
+
+| ID | Name | Tuning |
+|----|------|--------|
+| `ukulele` | Standard Ukulele | G-C-E-A |
+| `baritone-ukulele` | Baritone Ukulele | D-G-B-E |
+| `ukulele-5ths` | 5ths tuned Ukulele | C-G-D-A |
+| `guitar` | Standard Guitar | E-A-D-G-B-E |
+| `guitar-drop-d` | Drop-D Guitar | D-A-D-G-B-E |
+| `mandolin` | Standard Mandolin | G-D-A-E |
+
+### Custom Instruments
+
+Register custom instruments at runtime with `registerInstrument`:
 
 ```javascript
-import { chordDataService } from 'chord-component';
+import { registerInstrument } from '@parent-tobias/chord-component';
 
-// Programmatically save a custom chord
-await chordDataService.saveUserChord('Standard Ukulele', 'C', {
-    fingers: [[4, 0], [3, 0], [2, 0], [1, 3]],
-    barres: []
+registerInstrument('dulcimer', {
+    name: 'Mountain Dulcimer',
+    strings: ['D', 'A', 'D'],
+    frets: 13
 });
-
-// Get all user-defined chords
-const userChords = await chordDataService.getAllUserChords();
-
-// Delete a custom chord (revert to default)
-await chordDataService.deleteUserChord('Standard Ukulele', 'C');
 ```
 
-## Supported Instruments
+Then use the ID in any component:
 
-- **Standard Ukulele** (G-C-E-A tuning)
-- **Baritone Ukulele** (D-G-B-E tuning)
-- **5ths tuned Ukulele** (C-G-D-A tuning)
-- **Standard Guitar** (E-A-D-G-B-E tuning)
-- **Drop-D Guitar** (D-A-D-G-B-E tuning)
-- **Standard Mandolin** (G-D-A-E tuning)
+```html
+<chord-diagram chord="Gm7" instrument="dulcimer"></chord-diagram>
+```
 
 ## Supported Chord Types
 
@@ -197,84 +218,40 @@ await chordDataService.deleteUserChord('Standard Ukulele', 'C');
 - **Extended**: C9, C11, C13, etc.
 - **Add chords**: Cadd9, etc.
 
-## Development
-
-### Setup
-
-```bash
-git clone <repository-url>
-cd chord-components
-npm install
-```
-
-### Development Server
-
-```bash
-npm run dev
-```
-
-This starts a development server with the demo page at `http://localhost:5173/demo/`
-
-### Build
-
-```bash
-npm run build
-```
-
-### Lint
-
-```bash
-npm run lint
-```
-
 ## Customization
 
-### Custom Chord Definitions
-
-#### Using the Chord Editor (Recommended)
-
-The easiest way to create custom chords is using the interactive `<chord-editor>` component:
+### Using the Chord Editor (Recommended)
 
 ```html
-<chord-editor chord="Csus2" instrument="Standard Ukulele"></chord-editor>
+<chord-editor chord="Csus2" instrument="ukulele"></chord-editor>
 ```
 
 Custom chords are automatically saved to IndexedDB and will be used by all `<chord-diagram>` components.
 
-See the [interactive demo](./demo/editor.html) for hands-on examples.
-
-#### Programmatic API
+### Programmatic API
 
 ```javascript
-import { chordDataService } from 'chord-component';
+import { chordDataService } from '@parent-tobias/chord-component';
 
 // Save a custom chord
-await chordDataService.saveUserChord('Standard Ukulele', 'Csus2', {
+await chordDataService.saveUserChord('ukulele', 'Csus2', {
     barres: [],
     fingers: [[4, 0], [3, 2], [2, 3], [1, 0]]
 });
 
 // Get chord data (user override if exists, otherwise system default)
-const chord = await chordDataService.getChord('Standard Ukulele', 'C');
-```
+const chord = await chordDataService.getChord('ukulele', 'C');
 
-#### Modifying System Defaults
+// Get all user-defined chords
+const userChords = await chordDataService.getAllUserChords();
 
-You can also extend the system defaults (not recommended for user preferences):
-
-```javascript
-import { systemDefaultChords } from 'chord-component';
-
-// Add to system defaults
-systemDefaultChords["Standard Ukulele"]["Csus2"] = {
-    barres: [],
-    fingers: [[4, 0], [3, 2], [2, 3], [1, 0]]
-};
+// Delete a custom chord (revert to default)
+await chordDataService.deleteUserChord('ukulele', 'C');
 ```
 
 ### Styling
 
-The components use CSS custom properties for theming. You can override the default dark theme:
+The components use Shadow DOM. You can style the host element:
 
 ```css
 chord-diagram {
@@ -288,45 +265,113 @@ chord-diagram {
 
 ### Music Utilities
 
-The package exports several utility functions for working with music theory:
-
 ```javascript
 import {
-    instruments,        // Array of supported instruments
+    instruments,        // Array of all registered instruments
+    getInstrument,     // Look up instrument by ID
+    registerInstrument,// Register a custom instrument
     chordToNotes,      // Convert chord name to note array
     parseChords,       // Parse chords from ChordPro notation
     scaleTones,        // Get notes in a scale
     findBase           // Find note index in chromatic scale
-} from 'chord-component';
+} from '@parent-tobias/chord-component';
 
-// Example usage
 const chordData = chordToNotes("Cmaj7");
-console.log(chordData); // { name: "Cmaj7", notes: ["C", "E", "G", "B"] }
+// { name: "Cmaj7", notes: ["C", "E", "G", "B"] }
+
+const uke = getInstrument("ukulele");
+// { id: "ukulele", name: "Standard Ukulele", strings: ["G","C","E","A"], frets: 19 }
 ```
 
 ### Data Management Services
 
-The package includes services for managing chord data:
-
 ```javascript
-import { chordDataService, indexedDBService } from 'chord-component';
+import { chordDataService, indexedDBService } from '@parent-tobias/chord-component';
 
 // Chord Data Service
-await chordDataService.getChordData('Standard Ukulele');
-await chordDataService.saveUserChord(instrument, chord, data);
+await chordDataService.getChordData('ukulele');
+await chordDataService.saveUserChord('ukulele', 'C', data);
 await chordDataService.getAllUserChords();
 await chordDataService.clearCache();
 
 // IndexedDB Service (low-level)
-await indexedDBService.saveUserChord(instrument, chord, data);
-await indexedDBService.getUserChord(instrument, chord);
+await indexedDBService.saveUserChord('ukulele', 'C', data);
+await indexedDBService.getUserChord('ukulele', 'C');
 ```
 
 See [DATA_SERVICE.md](./DATA_SERVICE.md) for complete API documentation.
 
-## Documentation
+## Upgrading from v1.x to v2.0
 
-Comprehensive guides for advanced features:
+v2.0 is a **breaking change**. The main changes:
+
+### 1. Instrument attributes use short IDs instead of display names
+
+```html
+<!-- v1.x -->
+<chord-diagram chord="C" instrument="Standard Ukulele"></chord-diagram>
+
+<!-- v2.0 -->
+<chord-diagram chord="C" instrument="ukulele"></chord-diagram>
+```
+
+**ID mapping:**
+
+| v1.x (display name) | v2.0 (ID) |
+|---|---|
+| `Standard Ukulele` | `ukulele` |
+| `Baritone Ukulele` | `baritone-ukulele` |
+| `5ths tuned Ukulele` | `ukulele-5ths` |
+| `Standard Guitar` | `guitar` |
+| `Drop-D Guitar` | `guitar-drop-d` |
+| `Standard Mandolin` | `mandolin` |
+
+### 2. Service calls use IDs
+
+```javascript
+// v1.x
+await chordDataService.saveUserChord('Standard Ukulele', 'C', data);
+
+// v2.0
+await chordDataService.saveUserChord('ukulele', 'C', data);
+```
+
+### 3. IndexedDB data is not migrated
+
+User-saved chords from v1.x were stored under display-name keys and will not be found by v2.0. Users will need to re-enter any custom chord fingerings.
+
+### 4. New features (non-breaking)
+
+- **`registerInstrument(id, config)`** &mdash; register custom instruments at runtime
+- **`getInstrument(id)`** &mdash; look up instrument by ID
+- **`chord-changed` event** on `<chord-editor>` &mdash; fires on every edit
+- **`chordFingers` / `chordBarres` JS properties** on `<chord-diagram>` &mdash; pass chord data directly without JSON attributes
+
+## Development
+
+### Setup
+
+```bash
+git clone https://github.com/parent-tobias/chord-component.git
+cd chord-components
+npm install
+```
+
+### Development Server
+
+```bash
+npm run dev
+```
+
+Starts a dev server at `http://localhost:5173/demo/`
+
+### Build
+
+```bash
+npm run build
+```
+
+## Documentation
 
 - **[CHORD_EDITOR.md](./CHORD_EDITOR.md)** - Complete chord editor documentation
 - **[INTERACTIVE_EDITING.md](./INTERACTIVE_EDITING.md)** - Visual and text-based editing workflows
@@ -336,13 +381,10 @@ Comprehensive guides for advanced features:
 
 ## Demo
 
-Run the demo locally:
-
 ```bash
 npm run dev
 ```
 
-Then visit:
 - `http://localhost:5173/demo/` - Chord diagram and list examples
 - `http://localhost:5173/demo/editor.html` - Interactive chord editor
 
@@ -356,4 +398,4 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ## Support
 
-For questions and support, please open an issue on the GitHub repository.
+For questions and support, please open an issue on the [GitHub repository](https://github.com/parent-tobias/chord-component/issues).

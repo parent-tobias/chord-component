@@ -1,19 +1,18 @@
-import { css as b, LitElement as x, html as n } from "lit";
-import { customElement as w } from "./node_modules/@lit/reactive-element/decorators/custom-element.js";
-import { property as v } from "./node_modules/@lit/reactive-element/decorators/property.js";
-import { state as g } from "./node_modules/@lit/reactive-element/decorators/state.js";
+import { LitElement as x, css as w, html as s } from "lit";
+import { property as p } from "./node_modules/@lit/reactive-element/decorators/property.js";
+import { state as u } from "./node_modules/@lit/reactive-element/decorators/state.js";
 import { query as C } from "./node_modules/@lit/reactive-element/decorators/query.js";
-import { SVGuitarChord as D } from "svguitar";
-import { instruments as E, chordToNotes as $, chordOnInstrument as j } from "./music-utils.js";
-import { chordDataService as F } from "./chord-data-service.js";
-var O = Object.defineProperty, L = Object.getOwnPropertyDescriptor, d = (r, c, a, o) => {
-  for (var i = o > 1 ? void 0 : o ? L(c, a) : c, h = r.length - 1, s; h >= 0; h--)
-    (s = r[h]) && (i = (o ? s(c, a, i) : s(i)) || i);
-  return o && i && O(c, a, i), i;
+import { SVGuitarChord as E } from "svguitar";
+import { getInstrument as $, chordToNotes as F, chordOnInstrument as D } from "./music-utils.js";
+import { chordDataService as k } from "./chord-data-service.js";
+var L = Object.defineProperty, d = (y, r, i, n) => {
+  for (var e = void 0, a = y.length - 1, c; a >= 0; a--)
+    (c = y[a]) && (e = c(r, i, e) || e);
+  return e && L(r, i, e), e;
 };
-let e = class extends x {
+const v = class v extends x {
   constructor() {
-    super(...arguments), this.instrument = "Standard Ukulele", this.chord = "", this.chordData = {}, this.isLoading = !1, this.loadError = null;
+    super(...arguments), this.instrument = "ukulele", this.chord = "", this.chordData = {}, this.isLoading = !1, this.loadError = null;
   }
   async connectedCallback() {
     super.connectedCallback(), await this.loadChordData();
@@ -24,7 +23,7 @@ let e = class extends x {
   async loadChordData() {
     this.isLoading = !0, this.loadError = null;
     try {
-      const r = await F.getChordData(this.instrument);
+      const r = await k.getChordData(this.instrument);
       this.chordData = r.data;
     } catch (r) {
       console.error("Failed to load chord data:", r), this.loadError = "Failed to load chord data", this.chordData = {};
@@ -34,7 +33,7 @@ let e = class extends x {
   }
   render() {
     if (this.isLoading)
-      return n`
+      return s`
 				<div class='chord'>
 					<div style="color: #90cdf4; font-size: 0.8rem; text-align: center; padding: 0.5rem;">
 						Loading...
@@ -42,70 +41,79 @@ let e = class extends x {
 				</div>
 			`;
     if (this.loadError)
-      return n`
+      return s`
 				<div class='chord'>
 					<div class='error'>${this.loadError}</div>
 				</div>
 			`;
-    if (!this.chord)
-      return n`
-				<div class='chord'>
-					<div class='error'>No chord specified</div>
-				</div>
-			`;
-    const r = E.find(({ name: t }) => t === this.instrument);
+    const r = $(this.instrument);
     if (!r)
-      return n`
+      return s`
 				<div class='chord'>
 					<span>${this.chord.replace(/(maj)$/, "")}</span>
 					<div class='error'>Unknown instrument: ${this.instrument}</div>
 				</div>
 			`;
-    const c = j(r), a = $(this.chord);
-    if (!a || !a.notes || a.notes.length === 0)
-      return n`
+    if (this.chordFingers)
+      return this.renderChart(r, {
+        fingers: this.chordFingers,
+        barres: this.chordBarres ?? []
+      });
+    if (!this.chord)
+      return s`
+				<div class='chord'>
+					<div class='error'>No chord specified</div>
+				</div>
+			`;
+    const i = D(r), n = F(this.chord);
+    if (!n || !n.notes || n.notes.length === 0)
+      return s`
 				<div class='chord'>
 					<span>${this.chord.replace(/(maj)$/, "")}</span>
 					<div class='error'>Unknown chord: ${this.chord}</div>
 				</div>
 			`;
-    const o = this.chordData[this.chord] ? this.chordData[this.chord] : {
+    const e = this.chordData[this.chord] ? this.chordData[this.chord] : {
       barres: [],
-      fingers: c(a) || []
-    }, i = o.fingers.map(
-      ([, t]) => typeof t == "number" ? t : 1 / 0
-    ), h = o.barres.map((t) => typeof t.fret == "number" ? t.fret : 0), s = [...i, ...h], y = s.length > 0 ? Math.min(...s.filter((t) => t > 0)) : 1, l = s.length > 0 ? Math.max(...s, 0) : 4;
-    let m = 1;
-    l > 4 && (m = Math.max(1, y));
-    let p, f;
-    m > 1 || l > 4 ? (p = Math.max(l - m + 1, 4), f = m) : (p = Math.max(l, 4), f = 1);
-    const u = document.createElement("div");
+      fingers: i(n) || []
+    };
+    return this.renderChart(r, e);
+  }
+  renderChart(r, i) {
+    const n = i.fingers.map(
+      ([, o]) => typeof o == "number" ? o : 1 / 0
+    ), e = i.barres.map((o) => typeof o.fret == "number" ? o.fret : 0), a = [...n, ...e], c = a.length > 0 ? Math.min(...a.filter((o) => o > 0)) : 1, h = a.length > 0 ? Math.max(...a, 0) : 4;
+    let l = 1;
+    h > 4 && (l = Math.max(1, c));
+    let f, g;
+    l > 1 || h > 4 ? (f = Math.max(h - l + 1, 4), g = l) : (f = Math.max(h, 4), g = 1);
+    const b = document.createElement("div"), m = this.chord ? this.chord.replace(/(maj)$/, "") : "";
     try {
-      return new D(u).configure({
+      return new E(b).configure({
         strings: r.strings.length,
-        frets: p,
-        position: f,
+        frets: f,
+        position: g,
         tuning: [...r.strings]
       }).chord({
-        fingers: o.fingers,
-        barres: o.barres
-      }).draw(), n`
+        fingers: i.fingers,
+        barres: i.barres
+      }).draw(), s`
 				<div class='chord'>
-					<span>${this.chord.replace(/(maj)$/, "")}</span>
-					<div class='diagram'>${u.firstChild}</div>
+					${m ? s`<span>${m}</span>` : ""}
+					<div class='diagram'>${b.firstChild}</div>
 				</div>
 			`;
-    } catch (t) {
-      return console.error("Error generating chord diagram:", t), n`
+    } catch (o) {
+      return console.error("Error generating chord diagram:", o), s`
 				<div class='chord'>
-					<span>${this.chord.replace(/(maj)$/, "")}</span>
+					${m ? s`<span>${m}</span>` : ""}
 					<div class='error'>Error generating diagram</div>
 				</div>
 			`;
     }
   }
 };
-e.styles = b`
+v.styles = w`
 	:host {
 		display: block;
 		width: 100%;
@@ -151,31 +159,36 @@ e.styles = b`
 		padding: 0.5rem;
 	}
 	`;
+let t = v;
 d([
-  v({
+  p({
     type: String
   })
-], e.prototype, "instrument", 2);
+], t.prototype, "instrument");
 d([
-  v({
+  p({
     type: String
   })
-], e.prototype, "chord", 2);
+], t.prototype, "chord");
+d([
+  p({ attribute: !1 })
+], t.prototype, "chordFingers");
+d([
+  p({ attribute: !1 })
+], t.prototype, "chordBarres");
 d([
   C(".diagram")
-], e.prototype, "container", 2);
+], t.prototype, "container");
 d([
-  g()
-], e.prototype, "chordData", 2);
+  u()
+], t.prototype, "chordData");
 d([
-  g()
-], e.prototype, "isLoading", 2);
+  u()
+], t.prototype, "isLoading");
 d([
-  g()
-], e.prototype, "loadError", 2);
-e = d([
-  w("chord-diagram")
-], e);
+  u()
+], t.prototype, "loadError");
+customElements.get("chord-diagram") || customElements.define("chord-diagram", t);
 export {
-  e as ChordDiagram
+  t as ChordDiagram
 };

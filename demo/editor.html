@@ -208,10 +208,10 @@
             <div class="controls">
                 <label>Instrument:</label>
                 <select id="instrument-select">
-                    <option value="Standard Ukulele">Standard Ukulele</option>
-                    <option value="Standard Guitar">Standard Guitar</option>
-                    <option value="Baritone Ukulele">Baritone Ukulele</option>
-                    <option value="Standard Mandolin">Standard Mandolin</option>
+                    <option value="ukulele">Standard Ukulele</option>
+                    <option value="guitar">Standard Guitar</option>
+                    <option value="baritone-ukulele">Baritone Ukulele</option>
+                    <option value="mandolin">Standard Mandolin</option>
                 </select>
 
                 <label>Chord:</label>
@@ -223,11 +223,11 @@
             <div class="editor-container">
                 <div>
                     <div class="comparison-label">Editor</div>
-                    <chord-editor id="chord-editor" chord="C" instrument="Standard Ukulele"></chord-editor>
+                    <chord-editor id="chord-editor" chord="C" instrument="ukulele"></chord-editor>
                 </div>
                 <div class="comparison">
                     <div class="comparison-label">Preview (Read-only)</div>
-                    <chord-diagram id="preview-diagram" chord="C" instrument="Standard Ukulele"></chord-diagram>
+                    <chord-diagram id="preview-diagram" chord="C" instrument="ukulele"></chord-diagram>
                 </div>
             </div>
         </div>
@@ -247,11 +247,16 @@
         <h2>Usage Example</h2>
         <div class="demo-section">
             <pre><code>&lt;!-- Add the chord editor to your page --&gt;
-&lt;chord-editor chord="C" instrument="Standard Ukulele"&gt;&lt;/chord-editor&gt;
+&lt;chord-editor chord="C" instrument="ukulele"&gt;&lt;/chord-editor&gt;
 
-&lt;!-- Listen for save events --&gt;
+&lt;!-- Listen for events --&gt;
 &lt;script type="module"&gt;
   const editor = document.querySelector('chord-editor');
+
+  editor.addEventListener('chord-changed', (e) => {
+    console.log('Chord edited:', e.detail);
+    // { fingers, barres } — fires on every edit
+  });
 
   editor.addEventListener('chord-saved', (e) => {
     console.log('Chord saved:', e.detail);
@@ -274,16 +279,16 @@
 const userChords = await chordDataService.getAllUserChords();
 
 // Get user chords for specific instrument
-const ukeChords = await chordDataService.getUserChordsByInstrument('Standard Ukulele');
+const ukeChords = await chordDataService.getUserChordsByInstrument('ukulele');
 
 // Save a custom chord
-await chordDataService.saveUserChord('Standard Ukulele', 'C', {
+await chordDataService.saveUserChord('ukulele', 'C', {
   fingers: [[4,0], [3,0], [2,0], [1,3]],
   barres: []
 });
 
 // Delete a custom chord (revert to default)
-await chordDataService.deleteUserChord('Standard Ukulele', 'C');
+await chordDataService.deleteUserChord('ukulele', 'C');
 
 // Clear all custom chords
 await chordDataService.clearUserChords();</code></pre>

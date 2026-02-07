@@ -22,6 +22,7 @@ export type MuChordsByScale = {
 }
 
 export type MuInstrument = {
+	id: string
 	name: string
 	strings: string[]
 	frets: number
@@ -113,13 +114,35 @@ export const chordsPerScale: MuChordsByScale[] = [
 ]
 
 export const instruments: MuInstrument[] = [
-  { name: 'Standard Ukulele', strings: ["G","C","E","A"], frets: 19},
-  { name: 'Baritone Ukulele', strings: ["D","G","B","E"], frets: 19},
-  { name: '5ths tuned Ukulele', strings: ["C","G","D","A"], frets: 19},
-  { name: 'Standard Guitar', strings: ["E","A","D","G","B","E"], frets: 15},
-  { name: 'Drop-D Guitar', strings: ["D","A","D","G","B","E"], frets: 15},
-  { name: 'Standard Mandolin', strings: ["G","D","A","E"], frets: 20}
+  { id: 'ukulele', name: 'Standard Ukulele', strings: ["G","C","E","A"], frets: 19},
+  { id: 'baritone-ukulele', name: 'Baritone Ukulele', strings: ["D","G","B","E"], frets: 19},
+  { id: 'ukulele-5ths', name: '5ths tuned Ukulele', strings: ["C","G","D","A"], frets: 19},
+  { id: 'guitar', name: 'Standard Guitar', strings: ["E","A","D","G","B","E"], frets: 15},
+  { id: 'guitar-drop-d', name: 'Drop-D Guitar', strings: ["D","A","D","G","B","E"], frets: 15},
+  { id: 'mandolin', name: 'Standard Mandolin', strings: ["G","D","A","E"], frets: 20}
 ];
+
+/**
+ * Look up an instrument by its ID.
+ */
+export const getInstrument = (id: string): MuInstrument | undefined =>
+  instruments.find(inst => inst.id === id);
+
+/**
+ * Register a custom instrument at runtime.
+ * Throws if an instrument with the same ID already exists.
+ */
+export const registerInstrument = (
+  id: string,
+  config: { name: string; strings: string[]; frets: number }
+): MuInstrument => {
+  if (getInstrument(id)) {
+    throw new Error(`Instrument with id "${id}" is already registered.`);
+  }
+  const instrument: MuInstrument = { id, ...config };
+  instruments.push(instrument);
+  return instrument;
+};
 
 const keyChordRegex = /\[([A-Ga-g](?:#|b)?)(m|min|maj|aug|dim|7|m7|maj7|aug7|dim7|m7b5|mMaj7|sus2|sus4|7sus2|7sus4|9|m9|maj9|11|m11|13|m13|5|6|m6|add9|mAdd9)?(-[a-zA-Z0-9]*)?\]/gm;
 

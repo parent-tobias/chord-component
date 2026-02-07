@@ -1,26 +1,28 @@
-import { ChordDiagram as e } from "./chord-diagram.js";
-import { ChordList as t } from "./chord-list.js";
+import { ChordDiagram as o } from "./chord-diagram.js";
+import { ChordList as s } from "./chord-list.js";
 import { ChordEditor as m } from "./chord-editor.js";
-import { chordOnInstrument as c, chordToNotes as h, chords as f, chordsPerScale as n, findBase as i, instruments as p, keys as x, notes as C, parseChords as l, scaleTones as D, scales as u } from "./music-utils.js";
+import { chordOnInstrument as a, chordToNotes as c, chords as h, chordsPerScale as f, findBase as i, getInstrument as p, instruments as x, keys as u, notes as C, parseChords as l, registerInstrument as D, scaleTones as g, scales as I } from "./music-utils.js";
 import { systemDefaultChords as v } from "./default-chords.js";
 import { chordDataService as B } from "./chord-data-service.js";
-import { indexedDBService as g } from "./indexed-db-service.js";
+import { indexedDBService as k } from "./indexed-db-service.js";
 export {
-  e as ChordDiagram,
+  o as ChordDiagram,
   m as ChordEditor,
-  t as ChordList,
+  s as ChordList,
   B as chordDataService,
-  c as chordOnInstrument,
-  h as chordToNotes,
-  f as chords,
-  n as chordsPerScale,
+  a as chordOnInstrument,
+  c as chordToNotes,
+  h as chords,
+  f as chordsPerScale,
   i as findBase,
-  g as indexedDBService,
-  p as instruments,
-  x as keys,
+  p as getInstrument,
+  k as indexedDBService,
+  x as instruments,
+  u as keys,
   C as notes,
   l as parseChords,
-  D as scaleTones,
-  u as scales,
+  D as registerInstrument,
+  g as scaleTones,
+  I as scales,
   v as systemDefaultChords
 };

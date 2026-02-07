@@ -106,10 +106,10 @@
             <div class="controls">
                 <label>Instrument:</label>
                 <select id="instrument-select">
-                    <option value="Standard Ukulele">Standard Ukulele</option>
-                    <option value="Standard Guitar">Standard Guitar</option>
-                    <option value="Baritone Ukulele">Baritone Ukulele</option>
-                    <option value="Standard Mandolin">Standard Mandolin</option>
+                    <option value="ukulele">Standard Ukulele</option>
+                    <option value="guitar">Standard Guitar</option>
+                    <option value="baritone-ukulele">Baritone Ukulele</option>
+                    <option value="mandolin">Standard Mandolin</option>
                 </select>
                 
                 <label>Chord:</label>
@@ -131,10 +131,10 @@
             </div>
 
             <div class="example-container">
-                <chord-diagram id="single-chord" chord="C" instrument="Standard Ukulele"></chord-diagram>
+                <chord-diagram id="single-chord" chord="C" instrument="ukulele"></chord-diagram>
             </div>
 
-            <pre><code>&lt;chord-diagram chord="C" instrument="Standard Ukulele"&gt;&lt;/chord-diagram&gt;</code></pre>
+            <pre><code>&lt;chord-diagram chord="C" instrument="ukulele"&gt;&lt;/chord-diagram&gt;</code></pre>
         </div>
 
         <h2>Chord Lists</h2>
@@ -144,8 +144,8 @@
             <div class="controls">
                 <label>Instrument:</label>
                 <select id="list-instrument-select">
-                    <option value="Standard Ukulele">Standard Ukulele</option>
-                    <option value="Standard Guitar">Standard Guitar</option>
+                    <option value="ukulele">Standard Ukulele</option>
+                    <option value="guitar">Standard Guitar</option>
                 </select>
                 
                 <button id="common-chords-btn">Common Chords</button>
@@ -154,31 +154,31 @@
             </div>
 
             <div class="example-container">
-                <chord-list id="chord-list-demo" 
-                           instrument="Standard Ukulele" 
+                <chord-list id="chord-list-demo"
+                           instrument="ukulele"
                            chords='["C", "F", "G", "Am"]'>
                 </chord-list>
             </div>
 
-            <pre><code>&lt;chord-list instrument="Standard Ukulele" chords='["C", "F", "G", "Am"]'&gt;&lt;/chord-list&gt;</code></pre>
+            <pre><code>&lt;chord-list instrument="ukulele" chords='["C", "F", "G", "Am"]'&gt;&lt;/chord-list&gt;</code></pre>
         </div>
 
         <h2>Quick Examples</h2>
         <div class="demo-section">
             <h3>Ukulele Common Chords</h3>
             <div class="inline-chords">
-                <chord-diagram chord="C" instrument="Standard Ukulele"></chord-diagram>
-                <chord-diagram chord="F" instrument="Standard Ukulele"></chord-diagram>
-                <chord-diagram chord="G" instrument="Standard Ukulele"></chord-diagram>
-                <chord-diagram chord="Am" instrument="Standard Ukulele"></chord-diagram>
+                <chord-diagram chord="C" instrument="ukulele"></chord-diagram>
+                <chord-diagram chord="F" instrument="ukulele"></chord-diagram>
+                <chord-diagram chord="G" instrument="ukulele"></chord-diagram>
+                <chord-diagram chord="Am" instrument="ukulele"></chord-diagram>
             </div>
 
             <h3>Guitar Power Chords</h3>
             <div class="inline-chords">
-                <chord-diagram chord="E" instrument="Standard Guitar"></chord-diagram>
-                <chord-diagram chord="A" instrument="Standard Guitar"></chord-diagram>
-                <chord-diagram chord="D" instrument="Standard Guitar"></chord-diagram>
-                <chord-diagram chord="G" instrument="Standard Guitar"></chord-diagram>
+                <chord-diagram chord="E" instrument="guitar"></chord-diagram>
+                <chord-diagram chord="A" instrument="guitar"></chord-diagram>
+                <chord-diagram chord="D" instrument="guitar"></chord-diagram>
+                <chord-diagram chord="G" instrument="guitar"></chord-diagram>
             </div>
         </div>
 
@@ -188,24 +188,24 @@
             <p>Displays a single chord diagram.</p>
             <ul>
                 <li><strong>chord</strong> (string): The chord name (e.g., "C", "Am7", "F#dim")</li>
-                <li><strong>instrument</strong> (string): The instrument type (default: "Standard Ukulele")</li>
+                <li><strong>instrument</strong> (string): Instrument ID (default: "ukulele")</li>
             </ul>
 
             <h3>chord-list</h3>
             <p>Displays multiple chord diagrams in a responsive grid.</p>
             <ul>
-                <li><strong>instrument</strong> (string): The instrument type (default: "Standard Ukulele")</li>
+                <li><strong>instrument</strong> (string): Instrument ID (default: "ukulele")</li>
                 <li><strong>chords</strong> (string|array): JSON string or array of chord names</li>
             </ul>
 
-            <h3>Supported Instruments</h3>
+            <h3>Built-in Instrument IDs</h3>
             <ul>
-                <li>Standard Ukulele</li>
-                <li>Baritone Ukulele</li>
-                <li>5ths tuned Ukulele</li>
-                <li>Standard Guitar</li>
-                <li>Drop-D Guitar</li>
-                <li>Standard Mandolin</li>
+                <li><code>ukulele</code> — Standard Ukulele</li>
+                <li><code>baritone-ukulele</code> — Baritone Ukulele</li>
+                <li><code>ukulele-5ths</code> — 5ths tuned Ukulele</li>
+                <li><code>guitar</code> — Standard Guitar</li>
+                <li><code>guitar-drop-d</code> — Drop-D Guitar</li>
+                <li><code>mandolin</code> — Standard Mandolin</li>
             </ul>
         </div>
     </div>

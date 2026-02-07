@@ -1,19 +1,20 @@
 import { LitElement, css, html, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { getInstrument } from './music-utils.js';
 import './chord-diagram.js';
 
 /**
  * A web component that displays a list of chord diagrams for a specific instrument.
- * 
+ *
  * @element chord-list
- * 
- * @attr {string} instrument - The instrument to display chords for (default: 'Standard Ukulele')
+ *
+ * @attr {string} instrument - Instrument ID (default: 'ukulele'). See `instruments` for built-in IDs.
  * @attr {string|string[]} chords - JSON string or array of chord names to display
- * 
+ *
  * @example
  * ```html
- * <chord-list instrument="Standard Ukulele" chords='["C", "F", "G", "Am"]'></chord-list>
- * <chord-list instrument="Standard Guitar" chords='["E", "A", "D"]'></chord-list>
+ * <chord-list instrument="ukulele" chords='["C", "F", "G", "Am"]'></chord-list>
+ * <chord-list instrument="guitar" chords='["E", "A", "D"]'></chord-list>
  * ```
  */
 // @customElement('chord-list')
@@ -25,7 +26,7 @@ export class ChordList extends LitElement {
 	@property({
 		type: String
 	})
-	instrument = 'Standard Ukulele';
+	instrument = 'ukulele';
 
 	/**
 	 * The chord names to display - can be a JSON string or array
@@ -121,9 +122,10 @@ export class ChordList extends LitElement {
 		const chordNames = this.parsedChords;
 		
 		if (chordNames.length === 0) {
+			const displayName = getInstrument(this.instrument)?.name ?? this.instrument;
 			return html`
 				<header>
-					<h3>${this.instrument}</h3>
+					<h3>${displayName}</h3>
 				</header>
 				<div class='empty-state'>
 					No chords to display
@@ -131,9 +133,10 @@ export class ChordList extends LitElement {
 			`;
 		}
 
+		const displayName = getInstrument(this.instrument)?.name ?? this.instrument;
 		return html`
 			<header>
-				<h3>${this.instrument} (${this.numChords} chord${this.numChords !== 1 ? 's' : ''})</h3>
+				<h3>${displayName} (${this.numChords} chord${this.numChords !== 1 ? 's' : ''})</h3>
 			</header>
 			<div class='list'>
 				${chordNames.map((chord) =>

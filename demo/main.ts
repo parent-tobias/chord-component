@@ -33,7 +33,7 @@ listInstrumentSelect?.addEventListener('change', () => {
 commonChordsBtn?.addEventListener('click', () => {
   if (chordListDemo && listInstrumentSelect) {
     const instrument = listInstrumentSelect.value;
-    const chords = instrument === 'Standard Guitar'
+    const chords = instrument === 'guitar'
       ? ["C", "D", "E", "F", "G", "A", "Em", "Am", "Dm"]
       : ["C", "F", "G", "Am", "D", "Em", "A7", "D7", "G7"];
     chordListDemo.setAttribute('chords', JSON.stringify(chords));

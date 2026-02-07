@@ -13,7 +13,7 @@ export type InstrumentDefault = {
 type Instrument = Dictionary<InstrumentDefault>
 
 export const systemDefaultChords: Dictionary<Instrument> = {
-  "Standard Ukulele": {
+  "ukulele": {
     "Cm": {
       "barres": [],
       "fingers": [
@@ -239,7 +239,7 @@ export const systemDefaultChords: Dictionary<Instrument> = {
       ]
     }
   },
-  "Standard Guitar": {
+  "guitar": {
     "C": {
       "barres": [],
       "fingers": [

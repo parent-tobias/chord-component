@@ -3,7 +3,7 @@ import { property, state, query } from 'lit/decorators.js';
 import { SVGuitarChord } from 'svguitar';
 import type { Finger, Barre } from 'svguitar';
 
-import { instruments, chordOnInstrument, chordToNotes } from './music-utils.js';
+import { getInstrument, chordOnInstrument, chordToNotes } from './music-utils.js';
 import { chordDataService } from './chord-data-service.js';
 
 /**
@@ -12,15 +12,16 @@ import { chordDataService } from './chord-data-service.js';
  *
  * @element chord-editor
  *
- * @attr {string} instrument - The instrument to edit the chord for (default: 'Standard Ukulele')
+ * @attr {string} instrument - Instrument ID (default: 'ukulele'). See `instruments` for built-in IDs.
  * @attr {string} chord - The chord name to edit (e.g., 'C', 'Am7', 'F#dim')
  *
  * @fires chord-saved - Fired when user saves the edited chord
  * @fires chord-reset - Fired when user resets to default
+ * @fires chord-changed - Fired on every edit (finger/barre add, remove, or update)
  *
  * @example
  * ```html
- * <chord-editor chord="C" instrument="Standard Ukulele"></chord-editor>
+ * <chord-editor chord="C" instrument="ukulele"></chord-editor>
  * ```
  */
 
@@ -304,7 +305,7 @@ export class ChordEditor extends LitElement {
 	`
 
 	@property({ type: String })
-	instrument = 'Standard Ukulele';
+	instrument = 'ukulele';
 
 	@property({ type: String })
 	chord = '';
@@ -334,7 +335,7 @@ export class ChordEditor extends LitElement {
 	diagramContainer?: HTMLElement;
 
 	private get numStrings(): number {
-		const inst = instruments.find(({ name }) => name === this.instrument);
+		const inst = getInstrument(this.instrument);
 		return inst?.strings.length || 4;
 	}
 
@@ -429,7 +430,7 @@ export class ChordEditor extends LitElement {
 	}
 
 	private generateDefaultChord() {
-		const instrumentObject = instruments.find(({ name }) => name === this.instrument);
+		const instrumentObject = getInstrument(this.instrument);
 		if (!instrumentObject) return;
 
 		const chordFinder = chordOnInstrument(instrumentObject);
@@ -447,7 +448,7 @@ export class ChordEditor extends LitElement {
 	private renderDiagram() {
 		if (!this.diagramContainer) return;
 
-		const instrumentObject = instruments.find(({ name }) => name === this.instrument);
+		const instrumentObject = getInstrument(this.instrument);
 		if (!instrumentObject) return;
 
 		// Clear existing diagram
@@ -554,6 +555,14 @@ export class ChordEditor extends LitElement {
 		// Barre mode would need more complex UI (select range)
 	}
 
+	private emitChordChanged() {
+		this.dispatchEvent(new CustomEvent('chord-changed', {
+			detail: { fingers: this.fingers, barres: this.barres },
+			bubbles: true,
+			composed: true
+		}));
+	}
+
 	private addOrUpdateFinger(stringNum: number, fretNum: number) {
 		const existingIndex = this.fingers.findIndex(([s]) => s === stringNum);
 
@@ -567,12 +576,14 @@ export class ChordEditor extends LitElement {
 
 		this.fingers = [...this.fingers]; // Trigger update
 		this.isModified = true;
+		this.emitChordChanged();
 		this.requestUpdate();
 	}
 
 	private removeFinger(stringNum: number) {
 		this.fingers = this.fingers.filter(([s]) => s !== stringNum);
 		this.isModified = true;
+		this.emitChordChanged();
 		this.requestUpdate();
 	}
 
@@ -580,6 +591,7 @@ export class ChordEditor extends LitElement {
 		this.fingers.splice(index, 1);
 		this.fingers = [...this.fingers];
 		this.isModified = true;
+		this.emitChordChanged();
 		this.requestUpdate();
 	}
 
@@ -644,6 +656,7 @@ export class ChordEditor extends LitElement {
 		this.fingers = [];
 		this.barres = [];
 		this.isModified = true;
+		this.emitChordChanged();
 		this.requestUpdate();
 	}
 
@@ -669,6 +682,7 @@ export class ChordEditor extends LitElement {
 			this.fingers[index] = [num, this.fingers[index][1]];
 			this.fingers = [...this.fingers];
 			this.isModified = true;
+			this.emitChordChanged();
 			this.requestUpdate();
 		}
 	}
@@ -679,6 +693,7 @@ export class ChordEditor extends LitElement {
 			this.fingers[index] = [this.fingers[index][0], num];
 			this.fingers = [...this.fingers];
 			this.isModified = true;
+			this.emitChordChanged();
 			this.requestUpdate();
 		}
 	}
@@ -688,6 +703,7 @@ export class ChordEditor extends LitElement {
 		this.fingers.push([1, 0]);
 		this.fingers = [...this.fingers];
 		this.isModified = true;
+		this.emitChordChanged();
 		this.requestUpdate();
 	}
 
@@ -701,6 +717,7 @@ export class ChordEditor extends LitElement {
 		});
 		this.barres = [...this.barres];
 		this.isModified = true;
+		this.emitChordChanged();
 		this.requestUpdate();
 	}
 
@@ -710,6 +727,7 @@ export class ChordEditor extends LitElement {
 			this.barres[index].fromString = num;
 			this.barres = [...this.barres];
 			this.isModified = true;
+			this.emitChordChanged();
 			this.requestUpdate();
 		}
 	}
@@ -720,6 +738,7 @@ export class ChordEditor extends LitElement {
 			this.barres[index].toString = num;
 			this.barres = [...this.barres];
 			this.isModified = true;
+			this.emitChordChanged();
 			this.requestUpdate();
 		}
 	}
@@ -730,6 +749,7 @@ export class ChordEditor extends LitElement {
 			this.barres[index].fret = num;
 			this.barres = [...this.barres];
 			this.isModified = true;
+			this.emitChordChanged();
 			this.requestUpdate();
 		}
 	}
@@ -738,6 +758,7 @@ export class ChordEditor extends LitElement {
 		this.barres.splice(index, 1);
 		this.barres = [...this.barres];
 		this.isModified = true;
+		this.emitChordChanged();
 		this.requestUpdate();
 	}
 
@@ -761,7 +782,7 @@ export class ChordEditor extends LitElement {
 		return html`
 			<div class='editor'>
 				<div class='header'>
-					<h3>${this.chord} - ${this.instrument}</h3>
+					<h3>${this.chord} - ${getInstrument(this.instrument)?.name ?? this.instrument}</h3>
 					${this.isModified ? html`<span class='badge modified'>Modified</span>` : html`<span class='badge'>Saved</span>`}
 				</div>
 

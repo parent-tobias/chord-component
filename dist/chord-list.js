@@ -1,16 +1,16 @@
-import { css as p, LitElement as c, html as m } from "lit";
-import { customElement as l } from "./node_modules/@lit/reactive-element/decorators/custom-element.js";
-import { property as d } from "./node_modules/@lit/reactive-element/decorators/property.js";
-import { state as u } from "./node_modules/@lit/reactive-element/decorators/state.js";
+import { LitElement as l, css as u, html as a } from "lit";
+import { property as c } from "./node_modules/@lit/reactive-element/decorators/property.js";
+import { state as f } from "./node_modules/@lit/reactive-element/decorators/state.js";
+import { getInstrument as p } from "./music-utils.js";
 import "./chord-diagram.js";
-var f = Object.defineProperty, g = Object.getOwnPropertyDescriptor, o = (t, e, n, i) => {
-  for (var r = i > 1 ? void 0 : i ? g(e, n) : e, a = t.length - 1, h; a >= 0; a--)
-    (h = t[a]) && (r = (i ? h(e, n, r) : h(r)) || r);
-  return i && r && f(e, n, r), r;
+var g = Object.defineProperty, o = (h, e, i, n) => {
+  for (var t = void 0, r = h.length - 1, d; r >= 0; r--)
+    (d = h[r]) && (t = d(e, i, t) || t);
+  return t && g(e, i, t), t;
 };
-let s = class extends c {
+const m = class m extends l {
   constructor() {
-    super(...arguments), this.instrument = "Standard Ukulele", this.chords = "[]", this.numChords = 0;
+    super(...arguments), this.instrument = "ukulele", this.chords = "[]", this.numChords = 0;
   }
   /**
    * Parsed chord names from the chords property
@@ -22,31 +22,37 @@ let s = class extends c {
       return [];
     }
   }
-  updated(t) {
-    t.has("chords") && (this.numChords = this.parsedChords.length);
+  updated(e) {
+    e.has("chords") && (this.numChords = this.parsedChords.length);
   }
   render() {
-    const t = this.parsedChords;
-    return t.length === 0 ? m`
+    var n, t;
+    const e = this.parsedChords;
+    if (e.length === 0) {
+      const r = ((n = p(this.instrument)) == null ? void 0 : n.name) ?? this.instrument;
+      return a`
 				<header>
-					<h3>${this.instrument}</h3>
+					<h3>${r}</h3>
 				</header>
 				<div class='empty-state'>
 					No chords to display
 				</div>
-			` : m`
+			`;
+    }
+    const i = ((t = p(this.instrument)) == null ? void 0 : t.name) ?? this.instrument;
+    return a`
 			<header>
-				<h3>${this.instrument} (${this.numChords} chord${this.numChords !== 1 ? "s" : ""})</h3>
+				<h3>${i} (${this.numChords} chord${this.numChords !== 1 ? "s" : ""})</h3>
 			</header>
 			<div class='list'>
-				${t.map(
-      (e) => m`<chord-diagram chord=${e} instrument='${this.instrument}'></chord-diagram>`
+				${e.map(
+      (r) => a`<chord-diagram chord=${r} instrument='${this.instrument}'></chord-diagram>`
     )}
 			</div>
 		`;
   }
 };
-s.styles = p`
+m.styles = u`
 	:host {
 		display: block;
 		width: 100%;
@@ -100,20 +106,19 @@ s.styles = p`
 		}
 	}
 	`;
+let s = m;
 o([
-  d({
+  c({
     type: String
   })
-], s.prototype, "instrument", 2);
+], s.prototype, "instrument");
 o([
-  d()
-], s.prototype, "chords", 2);
+  c()
+], s.prototype, "chords");
 o([
-  u()
-], s.prototype, "numChords", 2);
-s = o([
-  l("chord-list")
-], s);
+  f()
+], s.prototype, "numChords");
+customElements.get("chord-list") || customElements.define("chord-list", s);
 export {
   s as ChordList
 };
