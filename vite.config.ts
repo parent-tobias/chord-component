@@ -1,7 +1,16 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import dts from 'vite-plugin-dts';
 
 export default defineConfig({
+  plugins: [
+    dts({
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.spec.ts', 'src/**/*.test.ts']
+      // No rollupTypes — with preserveModules, we want per-file .d.ts
+      // emitted alongside the .js files.
+    })
+  ],
   build: {
     lib: {
       entry: {

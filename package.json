@@ -1,6 +1,6 @@
 {
   "name": "@parent-tobias/chord-component",
-  "version": "2.0.0",
+  "version": "2.1.3",
   "description": "Lit-based web components for displaying musical chord diagrams and chord lists",
   "type": "module",
   "main": "dist/index.js",
@@ -72,7 +72,8 @@
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
     "typescript": "^5.0.0",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.7.2"
   },
   "peerDependencies": {
     "lit": "^3.0.0"

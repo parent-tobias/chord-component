@@ -32,13 +32,13 @@ export class ChordDiagram extends LitElement {
 	:host {
 		display: block;
 		width: 100%;
-		min-width: 100px;
-		max-width: 150px;
-		border: 1px solid #4a5568;
+		border: 1px solid var(--chord-border, transparent);
 		border-radius: 4px;
-		background: #2d3748;
+		background: var(--chord-bg, transparent);
 		padding: 0.5rem;
 		box-sizing: border-box;
+		overflow: hidden;
+		color: var(--chord-diagram-color, currentColor);
 	}
 
 	.chord {
@@ -49,7 +49,7 @@ export class ChordDiagram extends LitElement {
 	}
 
 	.chord span {
-		color: #f8f8f8;
+		color: var(--chord-name-color, #f8f8f8);
 		font-size: 0.9rem;
 		font-weight: 500;
 		margin-bottom: 0.25rem;
@@ -60,11 +60,13 @@ export class ChordDiagram extends LitElement {
 		width: 100%;
 		display: flex;
 		justify-content: center;
+		overflow: hidden;
 	}
 
-	.diagram :global(svg) {
-		max-width: 100%;
+	.diagram svg {
+		width: 100%;
 		height: auto;
+		display: block;
 	}
 
 	.error {
@@ -90,6 +92,16 @@ export class ChordDiagram extends LitElement {
 		type: String
 	})
 	chord = '';
+
+	/**
+	 * If true, hides the chord name label inside the diagram.
+	 * Useful when the parent component provides its own label.
+	 */
+	@property({
+		type: Boolean,
+		attribute: 'hide-label'
+	})
+	hideLabel = false;
 
 	/**
 	 * Optional finger positions set via JS. When provided, bypasses chord name lookup.
@@ -252,7 +264,7 @@ export class ChordDiagram extends LitElement {
 
 		// Create a container div for SVGuitar
 		const divEl = document.createElement("div");
-		const label = this.chord ? this.chord.replace(/(maj)$/, '') : '';
+		const label = (!this.hideLabel && this.chord) ? this.chord.replace(/(maj)$/, '') : '';
 
 		try {
 			const chart = new SVGuitarChord(divEl);
@@ -261,13 +273,25 @@ export class ChordDiagram extends LitElement {
 					strings: instrumentObject.strings.length,
 					frets: fretCount,
 					position: displayPosition,
-					tuning: [...instrumentObject.strings]
+					tuning: [...instrumentObject.strings],
+					color: 'currentColor',
+					fingerTextColor: '#ffffff',
 				})
 				.chord({
 					fingers: chartSettings.fingers,
 					barres: chartSettings.barres
 				})
 				.draw();
+
+			// Firefox treats SVGs with only a viewBox (no height attr) as replaced
+			// elements and falls back to 150px. Explicit aspect-ratio fixes this.
+			const svg = divEl.querySelector('svg');
+			if (svg) {
+				const vb = svg.getAttribute('viewBox')?.split(/\s+/).map(Number) ?? [];
+				if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) {
+					svg.style.aspectRatio = `${vb[2]} / ${vb[3]}`;
+				}
+			}
 
 			return html`
 				<div class='chord'>
