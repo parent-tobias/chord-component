@@ -1,6 +1,6 @@
 {
   "name": "@parent-tobias/chord-component",
-  "version": "2.1.3",
+  "version": "3.0.0-alpha.0",
   "description": "Lit-based web components for displaying musical chord diagrams and chord lists",
   "type": "module",
   "main": "dist/index.js",
@@ -73,10 +73,17 @@
     "eslint": "^8.0.0",
     "typescript": "^5.0.0",
     "vite": "^5.0.0",
-    "vite-plugin-dts": "^3.7.2"
+    "vite-plugin-dts": "^3.7.2",
+    "@svguitar/chords-plugin": "0.0.4"
   },
   "peerDependencies": {
-    "lit": "^3.0.0"
+    "lit": "^3.0.0",
+    "@svguitar/chords-plugin": "0.0.4"
+  },
+  "peerDependenciesMeta": {
+    "@svguitar/chords-plugin": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=18.0.0"

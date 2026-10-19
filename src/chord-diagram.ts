@@ -4,8 +4,33 @@ import { SVGuitarChord } from 'svguitar';
 
 import { getInstrument, chordOnInstrument, chordToNotes } from './music-utils.js';
 import { chordDataService } from './chord-data-service.js';
+import { indexedDBService } from './indexed-db-service.js';
 import type { InstrumentDefault } from './default-chords.js';
 import type { Finger, Barre } from 'svguitar';
+
+/**
+ * Local shape of the optional @svguitar/chords-plugin module. We define this
+ * ourselves rather than importing the plugin's types so consumers who skip
+ * installing the plugin (optional peer dep) don't see "Cannot find module"
+ * TypeScript errors from our .d.ts files.
+ */
+interface ChordsPlugin {
+	getGuitarChord(name: string, voicing?: number): {
+		fingers: Finger[];
+		barres: Barre[];
+		position?: number;
+		title?: string;
+	};
+	getUkuleleChord(name: string, voicing?: number): {
+		fingers: Finger[];
+		barres: Barre[];
+		position?: number;
+		title?: string;
+	};
+}
+
+/** Instruments the chords-plugin natively supports. */
+const PLUGIN_INSTRUMENTS = new Set(['guitar', 'ukulele']);
 
 /**
  * A web component that displays a chord diagram for various instruments.
@@ -115,11 +140,34 @@ export class ChordDiagram extends LitElement {
 	@property({ attribute: false })
 	chordBarres?: Barre[];
 
+	/**
+	 * Which voicing to use when the chords-plugin offers multiple for the same
+	 * chord name. 0 is the first (most common) voicing. Only meaningful for
+	 * instruments the plugin supports (guitar, ukulele).
+	 */
+	@property({ type: Number, attribute: 'voicing-index' })
+	voicingIndex = 0;
+
 	@query('.diagram')
 	container?: HTMLElement;
 
 	@state()
 	private chordData: Record<string, InstrumentDefault> = {};
+
+	/**
+	 * User-saved chord override for the current chord+instrument, loaded via
+	 * indexedDBService. When present, takes priority over the plugin and
+	 * system defaults (host-set chordFingers still wins over this).
+	 */
+	@state()
+	private userChord: InstrumentDefault | null = null;
+
+	/**
+	 * Lazily-loaded chords-plugin module. Null when the optional peer dep
+	 * isn't installed — in that case the plugin tier is simply skipped.
+	 */
+	@state()
+	private plugin: ChordsPlugin | null = null;
 
 	@state()
 	private isLoading = false;
@@ -129,15 +177,20 @@ export class ChordDiagram extends LitElement {
 
 	async connectedCallback() {
 		super.connectedCallback();
-		await this.loadChordData();
+		await this.loadPlugin();
+		await Promise.all([this.loadUserChord(), this.loadChordData()]);
 	}
 
 	async updated(changedProperties: Map<string, any>) {
 		super.updated(changedProperties);
 
-		// Reload chord data if instrument changes
+		// Reload per changed property.
+		// - instrument change: both user chord and system data need refresh
+		// - chord change: only user chord lookup is per-chord
 		if (changedProperties.has('instrument')) {
-			await this.loadChordData();
+			await Promise.all([this.loadUserChord(), this.loadChordData()]);
+		} else if (changedProperties.has('chord')) {
+			await this.loadUserChord();
 		}
 	}
 
@@ -154,6 +207,44 @@ export class ChordDiagram extends LitElement {
 			this.chordData = {};
 		} finally {
 			this.isLoading = false;
+		}
+	}
+
+	/**
+	 * Fetch the user-saved override (if any) for the current chord+instrument.
+	 * Sets this.userChord to null when the user hasn't customized this chord.
+	 */
+	private async loadUserChord() {
+		if (!this.chord || !this.instrument) {
+			this.userChord = null;
+			return;
+		}
+		try {
+			const saved = await indexedDBService.getUserChord(this.instrument, this.chord);
+			this.userChord = saved
+				? { fingers: saved.fingers, barres: saved.barres, position: saved.position }
+				: null;
+		} catch (error) {
+			console.warn('[chord-diagram] Failed to load user chord:', error);
+			this.userChord = null;
+		}
+	}
+
+	/**
+	 * Attempt to load the optional @svguitar/chords-plugin. Silently sets
+	 * plugin to null if the peer dep isn't installed — consumers who don't
+	 * use guitar/ukulele don't need to pay the install cost.
+	 */
+	private async loadPlugin() {
+		if (this.plugin) return;
+		try {
+			// Dynamic string import so TypeScript doesn't try to resolve the
+			// optional peer dep at type-check time. The runtime import()
+			// still works the same way.
+			const specifier = '@svguitar/chords-plugin';
+			this.plugin = (await import(/* @vite-ignore */ specifier)) as ChordsPlugin;
+		} catch {
+			this.plugin = null;
 		}
 	}
 
@@ -187,7 +278,9 @@ export class ChordDiagram extends LitElement {
 			`;
 		}
 
-		// If JS properties are set, use them directly (skip chord lookup entirely)
+		// --- Chord resolution tiers (highest-priority first) ---
+
+		// A. Host-provided chordFingers prop — explicit override, skip everything else.
 		if (this.chordFingers) {
 			return this.renderChart(instrumentObject, {
 				fingers: this.chordFingers,
@@ -203,11 +296,35 @@ export class ChordDiagram extends LitElement {
 			`;
 		}
 
-		const chordFinder = chordOnInstrument(instrumentObject);
+		// B. User-saved override (from indexedDBService). A performer who
+		//    customized this chord's fingering through chord-editor wins over
+		//    both the plugin and system defaults.
+		if (this.userChord) {
+			return this.renderChart(instrumentObject, this.userChord);
+		}
 
-		// Given the chord name (G7, Bbmin), we need the notes in the chord
+		// C. @svguitar/chords-plugin — for guitar + standard ukulele only.
+		//    The plugin ships ~9k guitar and ~7k ukulele chords; falling
+		//    through here when the chord name is unknown lets system defaults
+		//    and dynamic generation take over for exotic chords.
+		if (this.plugin && PLUGIN_INSTRUMENTS.has(this.instrument)) {
+			try {
+				const chord = this.instrument === 'guitar'
+					? this.plugin.getGuitarChord(this.chord, this.voicingIndex)
+					: this.plugin.getUkuleleChord(this.chord, this.voicingIndex);
+				// renderChart auto-computes position from fingers, so we don't
+				// need to thread chord.position through here.
+				return this.renderChart(instrumentObject, {
+					fingers: chord.fingers,
+					barres: chord.barres ?? []
+				});
+			} catch {
+				// Unknown chord name or voicing out of range — fall through.
+			}
+		}
+
+		// Parse the chord name to notes for the system-defaults / dynamic tiers.
 		const chordObject = chordToNotes(this.chord);
-
 		if (!chordObject || !chordObject.notes || chordObject.notes.length === 0) {
 			return html`
 				<div class='chord'>
@@ -217,15 +334,21 @@ export class ChordDiagram extends LitElement {
 			`;
 		}
 
-		// Check if we have a default for this chord/instrument combination
-		const chartSettings = this.chordData[this.chord] ?
-			this.chordData[this.chord] :
-			{
-				barres: [],
-				fingers: chordFinder(chordObject) || []
-			};
+		// D. systemDefaultChords (loaded via chordDataService) — hand-curated
+		//    fingerings, still authoritative for instruments the plugin doesn't
+		//    cover (baritone-ukulele, ukulele-5ths, guitar-drop-d, mandolin,
+		//    custom instruments).
+		if (this.chordData[this.chord]) {
+			return this.renderChart(instrumentObject, this.chordData[this.chord]);
+		}
 
-		return this.renderChart(instrumentObject, chartSettings);
+		// E. Dynamic generation — compute fingerings on the fly from the
+		//    chord's notes and the instrument's tuning. Last resort.
+		const chordFinder = chordOnInstrument(instrumentObject);
+		return this.renderChart(instrumentObject, {
+			barres: [],
+			fingers: chordFinder(chordObject) || []
+		});
 	}
 
 	private renderChart(

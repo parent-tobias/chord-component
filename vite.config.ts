@@ -21,7 +21,7 @@ export default defineConfig({
       formats: ['es']
     },
     rollupOptions: {
-      external: ['lit', 'svguitar'],
+      external: ['lit', 'svguitar', '@svguitar/chords-plugin'],
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src'

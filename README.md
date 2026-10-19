@@ -2,6 +2,12 @@
 
 Lit-based web components for displaying musical chord diagrams and chord lists across various string instruments.
 
+> **⚠ `3.0.0-alpha` is published under the `alpha` npm dist-tag.** It depends on
+> `@svguitar/chords-plugin@0.0.4`, which is itself alpha software. Install explicitly with
+> `npm install @parent-tobias/chord-component@alpha @svguitar/chords-plugin@0.0.4`. Default
+> `npm install @parent-tobias/chord-component` still resolves to stable 2.1.3. See
+> [CHANGELOG.md](./CHANGELOG.md) for the 3.0 release notes.
+
 ## Features
 
 - Support for multiple instruments (Ukulele, Guitar, Mandolin) plus custom instrument registration
