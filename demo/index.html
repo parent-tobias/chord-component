@@ -22,7 +22,7 @@
         h1 {
             text-align: center;
             color: #63b3ed;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
 
         h2 {
@@ -30,6 +30,31 @@
             border-bottom: 2px solid #4a5568;
             padding-bottom: 0.5rem;
             margin-top: 3rem;
+        }
+
+        .alpha-banner {
+            background: linear-gradient(90deg, #f6ad55, #ed8936);
+            color: #1a202c;
+            padding: 0.75rem 1.25rem;
+            border-radius: 6px;
+            margin: 0 0 2rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alpha-banner strong {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .alpha-banner a {
+            color: #1a202c;
+            text-decoration: underline;
         }
 
         .demo-section {
@@ -48,7 +73,7 @@
             align-items: center;
         }
 
-        select, button {
+        select, button, input[type="text"] {
             padding: 0.5rem 1rem;
             border-radius: 4px;
             border: 1px solid #4a5568;
@@ -57,14 +82,72 @@
             font-size: 0.9rem;
         }
 
+        input[type="text"] {
+            min-width: 200px;
+        }
+
         button {
             background: #3182ce;
             border-color: #3182ce;
             cursor: pointer;
         }
 
-        button:hover {
+        button:hover:not(:disabled) {
             background: #2c5282;
+        }
+
+        button:disabled {
+            background: #4a5568;
+            border-color: #4a5568;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .voicing-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+        }
+
+        .voicing-control button {
+            padding: 0.25rem 0.5rem;
+            min-width: 2rem;
+            font-size: 0.85rem;
+        }
+
+        .voicing-indicator {
+            font-size: 0.85rem;
+            color: #cbd5e0;
+            min-width: 5.5rem;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .coverage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .coverage-badge.plugin {
+            background: rgba(72, 187, 120, 0.15);
+            color: #68d391;
+            border: 1px solid rgba(72, 187, 120, 0.4);
+        }
+
+        .coverage-badge.dynamic {
+            background: rgba(237, 137, 54, 0.15);
+            color: #f6ad55;
+            border: 1px solid rgba(237, 137, 54, 0.4);
         }
 
         .example-container {
@@ -93,61 +176,84 @@
         code {
             color: #f97316;
         }
+
+        .label-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .label-stack > label {
+            font-size: 0.85rem;
+            color: #a0aec0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎸 Chord Components Demo</h1>
-        
+
+        <div class="alpha-banner">
+            <strong>v3.0.0-alpha</strong>
+            <span>
+                Now backed by
+                <a href="https://www.npmjs.com/package/@svguitar/chords-plugin" target="_blank" rel="noopener">@svguitar/chords-plugin</a>
+                for guitar and ukulele — ~9k guitar chords, ~7k ukulele chords, with multiple voicings per chord.
+                Try the cycler and autocomplete below.
+            </span>
+        </div>
+
         <h2>Individual Chord Diagrams</h2>
         <div class="demo-section">
-            <p>Display individual chord diagrams for different instruments:</p>
-            
+            <p>Display individual chord diagrams for different instruments. When the instrument is guitar or ukulele, type any chord name and cycle through all the available voicings.</p>
+
             <div class="controls">
-                <label>Instrument:</label>
-                <select id="instrument-select">
-                    <option value="ukulele">Standard Ukulele</option>
-                    <option value="guitar">Standard Guitar</option>
-                    <option value="baritone-ukulele">Baritone Ukulele</option>
-                    <option value="mandolin">Standard Mandolin</option>
-                </select>
-                
-                <label>Chord:</label>
-                <select id="chord-select">
-                    <option value="C">C</option>
-                    <option value="Cm">Cm</option>
-                    <option value="C7">C7</option>
-                    <option value="Cmaj7">Cmaj7</option>
-                    <option value="D">D</option>
-                    <option value="Dm">Dm</option>
-                    <option value="E">E</option>
-                    <option value="Em">Em</option>
-                    <option value="F">F</option>
-                    <option value="G">G</option>
-                    <option value="G7">G7</option>
-                    <option value="Am">Am</option>
-                    <option value="A">A</option>
-                </select>
+                <div class="label-stack">
+                    <label for="instrument-select">Instrument</label>
+                    <select id="instrument-select">
+                        <option value="ukulele">Standard Ukulele</option>
+                        <option value="guitar">Standard Guitar</option>
+                        <option value="baritone-ukulele">Baritone Ukulele</option>
+                        <option value="mandolin">Standard Mandolin</option>
+                    </select>
+                </div>
+
+                <div class="label-stack">
+                    <label for="chord-input">Chord name</label>
+                    <input id="chord-input" type="text" value="C" list="chord-suggestions" placeholder="e.g. C, Am7, F#maj7" autocomplete="off">
+                    <datalist id="chord-suggestions"></datalist>
+                </div>
+
+                <div class="label-stack">
+                    <label>Voicing</label>
+                    <div class="voicing-control">
+                        <button id="voicing-prev" type="button" aria-label="Previous voicing">◀</button>
+                        <span id="voicing-indicator" class="voicing-indicator">—</span>
+                        <button id="voicing-next" type="button" aria-label="Next voicing">▶</button>
+                    </div>
+                </div>
             </div>
+
+            <div id="coverage-indicator"></div>
 
             <div class="example-container">
                 <chord-diagram id="single-chord" chord="C" instrument="ukulele"></chord-diagram>
             </div>
 
-            <pre><code>&lt;chord-diagram chord="C" instrument="ukulele"&gt;&lt;/chord-diagram&gt;</code></pre>
+            <pre><code>&lt;chord-diagram chord="C" instrument="ukulele" voicing-index="0"&gt;&lt;/chord-diagram&gt;</code></pre>
         </div>
 
         <h2>Chord Lists</h2>
         <div class="demo-section">
             <p>Display multiple chords in a responsive grid layout:</p>
-            
+
             <div class="controls">
-                <label>Instrument:</label>
+                <label for="list-instrument-select">Instrument:</label>
                 <select id="list-instrument-select">
                     <option value="ukulele">Standard Ukulele</option>
                     <option value="guitar">Standard Guitar</option>
                 </select>
-                
+
                 <button id="common-chords-btn">Common Chords</button>
                 <button id="jazz-chords-btn">Jazz Chords</button>
                 <button id="custom-chords-btn">Custom Set</button>
@@ -173,13 +279,26 @@
                 <chord-diagram chord="Am" instrument="ukulele"></chord-diagram>
             </div>
 
-            <h3>Guitar Power Chords</h3>
+            <h3>Guitar Common Chords</h3>
             <div class="inline-chords">
                 <chord-diagram chord="E" instrument="guitar"></chord-diagram>
                 <chord-diagram chord="A" instrument="guitar"></chord-diagram>
                 <chord-diagram chord="D" instrument="guitar"></chord-diagram>
                 <chord-diagram chord="G" instrument="guitar"></chord-diagram>
             </div>
+        </div>
+
+        <h2>How chord resolution works</h2>
+        <div class="demo-section">
+            <p>v3.0 uses a tiered chord-lookup pipeline. For each <code>&lt;chord-diagram&gt;</code>, we try, in order:</p>
+            <ol>
+                <li><strong>Host-provided <code>chordFingers</code> prop</strong> — an explicit override set via JavaScript.</li>
+                <li><strong>User-saved override</strong> — a fingering the user saved through <code>&lt;chord-editor&gt;</code>, stored in IndexedDB.</li>
+                <li><strong><code>@svguitar/chords-plugin</code></strong> — for standard guitar and standard GCEA ukulele only. Ships ~9k guitar chords and ~7k ukulele chords with multiple voicings each.</li>
+                <li><strong>Hand-curated system defaults</strong> — for anything the plugin doesn't cover (baritone ukulele, 5ths ukulele, drop-D guitar, mandolin, custom instruments).</li>
+                <li><strong>Dynamic generation</strong> — compute a fingering on the fly from the chord's notes and the instrument's tuning. Last resort.</li>
+            </ol>
+            <p>The green badge above means the current instrument hits tier 3 (plugin). The orange badge means we're using tiers 4 or 5.</p>
         </div>
 
         <h2>API Documentation</h2>
@@ -189,6 +308,8 @@
             <ul>
                 <li><strong>chord</strong> (string): The chord name (e.g., "C", "Am7", "F#dim")</li>
                 <li><strong>instrument</strong> (string): Instrument ID (default: "ukulele")</li>
+                <li><strong>voicing-index</strong> (number, v3.0+): Which plugin voicing to use (default: 0). Only applies to plugin-covered instruments.</li>
+                <li><strong>hide-label</strong> (boolean): Hide the chord name below the diagram</li>
             </ul>
 
             <h3>chord-list</h3>
@@ -198,12 +319,20 @@
                 <li><strong>chords</strong> (string|array): JSON string or array of chord names</li>
             </ul>
 
+            <h3>Helper exports (v3.0+)</h3>
+            <ul>
+                <li><code>searchChords(prefix, instrument?, limit?)</code> — autocomplete chord names.</li>
+                <li><code>chordNames(instrument?)</code> — list every chord the plugin can play on the instrument.</li>
+                <li><code>chordVoicings(chord, instrument?)</code> — how many voicings the plugin has for a chord.</li>
+            </ul>
+            <p>All three are async and return safe empty results when the optional <code>@svguitar/chords-plugin</code> peer dep isn't installed.</p>
+
             <h3>Built-in Instrument IDs</h3>
             <ul>
-                <li><code>ukulele</code> — Standard Ukulele</li>
+                <li><code>ukulele</code> — Standard Ukulele (plugin-covered)</li>
+                <li><code>guitar</code> — Standard Guitar (plugin-covered)</li>
                 <li><code>baritone-ukulele</code> — Baritone Ukulele</li>
                 <li><code>ukulele-5ths</code> — 5ths tuned Ukulele</li>
-                <li><code>guitar</code> — Standard Guitar</li>
                 <li><code>guitar-drop-d</code> — Drop-D Guitar</li>
                 <li><code>mandolin</code> — Standard Mandolin</li>
             </ul>
