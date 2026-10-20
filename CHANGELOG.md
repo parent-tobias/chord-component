@@ -5,6 +5,32 @@ All notable changes to `@parent-tobias/chord-component` will be documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0-alpha.1] — 2026-10-19
+
+### Fixed
+
+- **Plugin tier now actually works.** `3.0.0-alpha.0` used a `/* @vite-ignore */`
+  dynamic-import pattern that was intended to let the plugin be optional at
+  type-check time but inadvertently prevented bundlers (vite, rollup, webpack)
+  from routing the import to the plugin's installed location. In the deployed
+  demo and in consumer apps, the runtime `import('@svguitar/chords-plugin')`
+  tried to resolve a bare specifier the browser couldn't handle, silently
+  rejected, and the plugin tier was skipped. Non-slash chords quietly fell
+  back to system defaults (looked fine); slash chords like `D/F#` hit the
+  parse fallback and rendered as "Unknown chord" errors.
+- Removed the `/* @vite-ignore */` comment from both the `chord-diagram`
+  plugin loader and `plugin-helpers`. Local TypeScript type definitions
+  (introduced in alpha.0) already keep consumers who skip the plugin install
+  safe at compile time, so the vite-ignore workaround was unnecessary.
+
+### How to tell this fix is working
+
+- Type `D/F#` into the demo's chord input — you should see a chord diagram
+  (not "Unknown chord"), and the voicing cycler should show `1 / 18`.
+- The chord-diagram bundle in `docs/assets/` should contain many thousands of
+  chord-data entries (previously only a handful, confirming the plugin wasn't
+  being bundled).
+
 ## [3.0.0-alpha.0] — 2026-08-18
 
 **Alpha release.** Builds on the brand-new `@svguitar/chords-plugin` (0.0.4), which is itself

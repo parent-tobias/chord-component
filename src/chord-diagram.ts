@@ -238,11 +238,13 @@ export class ChordDiagram extends LitElement {
 	private async loadPlugin() {
 		if (this.plugin) return;
 		try {
-			// Dynamic string import so TypeScript doesn't try to resolve the
-			// optional peer dep at type-check time. The runtime import()
-			// still works the same way.
-			const specifier = '@svguitar/chords-plugin';
-			this.plugin = (await import(/* @vite-ignore */ specifier)) as ChordsPlugin;
+			// Dynamic import so the plugin is treated as an optional peer dep:
+			// bundlers (vite, rollup, webpack) that see this call will route it
+			// to the plugin's installed location, but if the plugin isn't
+			// installed at runtime the promise rejects and we fall through to
+			// null. See CHANGELOG for 3.0.0-alpha.1 — previously used
+			// /* @vite-ignore */ which inadvertently broke bundler resolution.
+			this.plugin = (await import('@svguitar/chords-plugin')) as unknown as ChordsPlugin;
 		} catch {
 			this.plugin = null;
 		}

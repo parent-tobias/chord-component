@@ -23,11 +23,13 @@ let pluginPromise: Promise<ChordsPluginData | null> | null = null;
 
 function loadPlugin(): Promise<ChordsPluginData | null> {
 	if (!pluginPromise) {
-		// Dynamic string import so TypeScript doesn't try to resolve the
-		// optional peer dep at type-check time.
-		const specifier = '@svguitar/chords-plugin';
-		pluginPromise = import(/* @vite-ignore */ specifier)
-			.then((mod) => mod as ChordsPluginData)
+		// Dynamic import routed by the consumer's bundler to the plugin's
+		// installed location. If the optional peer dep isn't installed at
+		// runtime, the promise rejects and we return null. See CHANGELOG
+		// for 3.0.0-alpha.1 — previously used /* @vite-ignore */ which
+		// inadvertently broke bundler resolution.
+		pluginPromise = import('@svguitar/chords-plugin')
+			.then((mod) => mod as unknown as ChordsPluginData)
 			.catch(() => null);
 	}
 	return pluginPromise;
