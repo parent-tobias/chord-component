@@ -314,11 +314,13 @@ export class ChordDiagram extends LitElement {
 				const chord = this.instrument === 'guitar'
 					? this.plugin.getGuitarChord(this.chord, this.voicingIndex)
 					: this.plugin.getUkuleleChord(this.chord, this.voicingIndex);
-				// renderChart auto-computes position from fingers, so we don't
-				// need to thread chord.position through here.
+				// The plugin returns position-relative fingers for barre /
+				// high-fret chords. Pass position through so renderChart lays
+				// them out at the right place on the fretboard.
 				return this.renderChart(instrumentObject, {
 					fingers: chord.fingers,
-					barres: chord.barres ?? []
+					barres: chord.barres ?? [],
+					position: chord.position
 				});
 			} catch {
 				// Unknown chord name or voicing out of range — fall through.
@@ -355,37 +357,47 @@ export class ChordDiagram extends LitElement {
 
 	private renderChart(
 		instrumentObject: import('./music-utils.js').MuInstrument,
-		chartSettings: { fingers: Finger[]; barres: Barre[] }
+		chartSettings: { fingers: Finger[]; barres: Barre[]; position?: number }
 	) {
-		// Auto-calculate position based on chord data (not stored with chord)
-		const arrayOfFrets: number[] = chartSettings.fingers.map(([, fret]): number =>
-			typeof fret === 'number' ? fret : Infinity
-		);
+		// Pull just the numeric frets out of the fingers. 'x' (muted) and 'o'
+		// (open) markers are strings, not numbers — they must not contaminate
+		// the min/max calculation (an unfiltered 'x' → Infinity → broken fret
+		// count that would throw inside SVGuitar).
+		const numericFrets: number[] = chartSettings.fingers
+			.map(([, fret]) => fret)
+			.filter((f): f is number => typeof f === 'number');
 		const barreFrets = chartSettings.barres.map((b: any) => typeof b.fret === 'number' ? b.fret : 0);
-		const allChordFrets = [...arrayOfFrets, ...barreFrets];
+		const allChordFrets = [...numericFrets, ...barreFrets];
 
-		const minChordFret = allChordFrets.length > 0 ? Math.min(...allChordFrets.filter(f => f > 0)) : 1;
+		const positiveFrets = allChordFrets.filter(f => f > 0);
+		const minChordFret = positiveFrets.length > 0 ? Math.min(...positiveFrets) : 1;
 		const maxChordFret = allChordFrets.length > 0 ? Math.max(...allChordFrets, 0) : 4;
 
-		let position = 1;
-		if (maxChordFret > 4) {
-			// For high chords, start from the lowest fret
-			position = Math.max(1, minChordFret);
-		}
-
-		// Determine fret range to display
+		// Position + fret count depend on whether the chord source gave us an
+		// explicit position:
+		//
+		//   - plugin / curated chords with `position` set: fingers are *relative*
+		//     to that position (SVGuitar convention), so fretCount is just the
+		//     max relative fret.
+		//
+		//   - chords without `position`: fingers are *absolute*. Auto-infer the
+		//     starting position from the lowest fret and compute the span.
+		let position: number;
 		let fretCount: number;
-		let displayPosition: number;
 
-		if (position > 1 || maxChordFret > 4) {
-			// High position chord - show from position
-			fretCount = Math.max(maxChordFret - position + 1, 4);
-			displayPosition = position;
-		} else {
-			// Low position chord - show from fret 1
+		if (chartSettings.position && chartSettings.position > 1) {
+			position = chartSettings.position;
 			fretCount = Math.max(maxChordFret, 4);
-			displayPosition = 1;
+		} else if (maxChordFret > 4) {
+			// High-fret chord with no explicit position — infer and span
+			position = Math.max(1, minChordFret);
+			fretCount = Math.max(maxChordFret - position + 1, 4);
+		} else {
+			// Low chord — show from fret 1
+			position = 1;
+			fretCount = Math.max(maxChordFret, 4);
 		}
+		const displayPosition = position;
 
 		// Create a container div for SVGuitar
 		const divEl = document.createElement("div");

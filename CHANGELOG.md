@@ -5,6 +5,37 @@ All notable changes to `@parent-tobias/chord-component` will be documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0-alpha.2] — 2026-10-20
+
+### Fixed
+
+- **`<chord-diagram>` crashed for any chord with muted strings.** `renderChart`'s
+  fret-math mapped `'x'` muted-string markers to `Infinity`, which contaminated
+  the `maxChordFret` calculation (`Math.max(..., Infinity) = Infinity`) and
+  produced an invalid `fretCount` passed into SVGuitar's `.configure()`.
+  SVGuitar then threw, the try/catch around `.draw()` caught it, and the
+  diagram rendered as "Error generating diagram".
+
+  Hit hardest on **guitar chords**, where muted strings are routine (C, D, Am,
+  Bb, F, F#m, C#m7, D/F#, Bb7/F, Cmaj7#11 — every one of those has `'x'` entries
+  in the plugin's chord data). Ukulele chords rarely mute strings, which is why
+  the bug was less visible on uke.
+
+  Fix: `renderChart` now filters non-numeric markers out of the fret list
+  before computing `min`/`max`.
+
+- **High-position chords from the plugin rendered at the wrong fretboard
+  position.** The plugin returns fingers *relative to position* for barre /
+  high-fret chords (e.g., `C#m7` at `position: 4` with fingers at relative
+  frets 1-3). `<chord-diagram>` was ignoring the `position` field and
+  treating fingers as absolute, so a C#m7 barre at the 4th fret rendered as
+  a C-major-shaped chord at the 1st fret — same shape, wrong name.
+
+  Fix: `renderChart` now accepts an optional `position`. When provided,
+  fingers are treated as position-relative (SVGuitar convention); when
+  absent, position is auto-inferred from absolute finger positions as before.
+  The plugin tier in the resolution pipeline passes `chord.position` through.
+
 ## [3.0.0-alpha.1] — 2026-10-19
 
 ### Fixed
