@@ -5,6 +5,24 @@ All notable changes to `@parent-tobias/chord-component` will be documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0-alpha.3] — 2026-10-20
+
+### Fixed
+
+- **Major 7th chords (Fmaj7, Cmaj9, etc.) now resolve from the plugin.**
+  chordsheetjs's `HtmlDivFormatter` rewrites `maj` → `ma` on display
+  (`Fmaj7` → `Fma7`, `Cmaj` → `Cma`). When chordpro-renderer uses that
+  display text as the chord name passed down to `<chord-diagram>`, the
+  plugin never saw a `j`. The plugin only accepts canonical `maj7` /
+  `maj9` / etc. names, so these chords were silently falling through to
+  the "unknown chord" branch.
+
+  `<chord-diagram>` now applies a tiny normalizer (`ma(\d|$)` → `maj$1`)
+  before the plugin lookup. The display label still shows whatever name
+  the host passed in — only the plugin's internal lookup sees the
+  normalized form. System defaults and user overrides are unaffected
+  (they're keyed by whatever name was stored).
+
 ## [3.0.0-alpha.2] — 2026-10-20
 
 ### Fixed

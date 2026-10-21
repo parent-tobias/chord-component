@@ -33,6 +33,25 @@ interface ChordsPlugin {
 const PLUGIN_INSTRUMENTS = new Set(['guitar', 'ukulele']);
 
 /**
+ * Normalize chord-name quirks that come from upstream formatters, so the
+ * plugin's canonical lookup table can find them.
+ *
+ * chordsheetjs's HtmlDivFormatter rewrites `maj` → `ma` on display
+ * (`Fmaj7` → `Fma7`, `Cmaj` → `Cma`). chordpro-renderer uses that display
+ * text as the chord attribute passed down to <chord-diagram>, so by the
+ * time we reach the plugin tier the "j" is already gone. The plugin only
+ * accepts `maj7` / `maj` / `maj9` etc. — not `ma7` — so chords with major
+ * 7ths and 9ths otherwise fall through to the unknown-chord path.
+ *
+ * Matches `ma` followed by a digit or end-of-string. Doesn't touch `m`
+ * (minor), `min`, `madd9` (where `d` isn't a digit), or `maj{N}` that
+ * already has its `j`.
+ */
+function normalizeChordNameForPlugin(name: string): string {
+	return name.replace(/ma(\d|$)/g, 'maj$1');
+}
+
+/**
  * A web component that displays a chord diagram for various instruments.
  *
  * @element chord-diagram
@@ -310,10 +329,11 @@ export class ChordDiagram extends LitElement {
 		//    through here when the chord name is unknown lets system defaults
 		//    and dynamic generation take over for exotic chords.
 		if (this.plugin && PLUGIN_INSTRUMENTS.has(this.instrument)) {
+			const pluginChordName = normalizeChordNameForPlugin(this.chord);
 			try {
 				const chord = this.instrument === 'guitar'
-					? this.plugin.getGuitarChord(this.chord, this.voicingIndex)
-					: this.plugin.getUkuleleChord(this.chord, this.voicingIndex);
+					? this.plugin.getGuitarChord(pluginChordName, this.voicingIndex)
+					: this.plugin.getUkuleleChord(pluginChordName, this.voicingIndex);
 				// The plugin returns position-relative fingers for barre /
 				// high-fret chords. Pass position through so renderChart lays
 				// them out at the right place on the fretboard.
