@@ -2,6 +2,8 @@
 
 Lit-based web components for displaying musical chord diagrams and chord lists across various string instruments.
 
+Built as an HTML wrapper for Omnibrains's [svguitar](https://github.com/omnibrain/svguitar) library, it allows for a simplified interface, requiring minimal JavaScript while keeping the power of custom SVGs.
+
 > **⚠ `3.0.0-alpha` is published under the `alpha` npm dist-tag.** It depends on
 > `@svguitar/chords-plugin@0.0.4`, which is itself alpha software. Install explicitly with
 > `npm install @parent-tobias/chord-component@alpha @svguitar/chords-plugin@0.0.4`. Default
